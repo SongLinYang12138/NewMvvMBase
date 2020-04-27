@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp">
+
+
+    <android.support.v7.widget.AppCompatCheckBox
+            android:id="@+id/ck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:theme="@style/primary_checkbox"
+            android:clickable="false"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginVertical="@dimen/margin_small"
+    />
+
+    <TextView android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:id="@+id/item"
+              android:textColor="#000"
+              android:alpha="0.8"
+              app:layout_constraintTop_toTopOf="@id/ck"
+              app:layout_constraintBottom_toBottomOf="@id/ck"
+              app:layout_constraintLeft_toRightOf="@id/ck"
+              android:textSize="17dp"
+              android:textAlignment="center"
+    />
+
+</android.support.constraint.ConstraintLayout>

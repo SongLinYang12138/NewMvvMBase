@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">BattleDore</string>
+
+    <!--矢量图标库-->
+    <string name="put_in_storage">&#xe88a;</string>
+    <string name="out_storage">&#xe89c;</string>
+    <string name="in_storage">&#xe894;</string>
+    <string name="mine">&#xe625;</string>
+    <string name="main">&#xe8be;</string>
+    <string name="mine_icon">&#xe620;</string>
+    <string name="arrow_down">&#xe668;</string>
+    <string name="arrow_right">&#xe8f1;</string>
+    <string name="arrow_left">&#xe8ef;</string>
+    <string name="main_menu">&#xe8bd;</string>
+    <string name="camera">&#xe661;</string>
+    <string name="search">&#xe8bb;</string>
+    <string name="scan">&#xe69a;</string>
+    <string name="delete">&#xe8e7;</string>
+    <string name="close">&#xe8e8;</string>
+    <string name="reduce">&#xe66a;</string>
+    <string name="add">&#xe626;</string>
+    <string name="full_left">&#xe60e;</string>
+    <string name="full_down">&#xe600;</string>
+    <string name="setting">&#xe8bc;</string>
+    <string name="setting_real">&#xe8bd;</string>
+    <string name="version">&#xe8b9;</string>
+    <string name="img">&#xe665;</string>
+
+    <!--计划-->
+    <string name="plan">&#xe643;</string>
+    <!--任务-->
+    <string name="mission">&#xe610;</string>
+    <!--列表-->
+    <string name="list">&#xe739;</string>
+    <!--历史-->
+    <string name="history">&#xe6d9;</string>
+
+    <string name="indicatorname">LineSpinFadeLoaderIndicator</string>
+
+    <string name="login_title">海程邦达</string>
+
+</resources>

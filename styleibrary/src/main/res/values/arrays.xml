@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="protect_type">
+
+        <item>单件保护</item>
+        <item>整体保护</item>
+        <item>新品保护</item>
+
+    </string-array>
+
+    <string-array name="plate_type">
+        <item>大</item>
+        <item>小</item>
+
+    </string-array>
+</resources>

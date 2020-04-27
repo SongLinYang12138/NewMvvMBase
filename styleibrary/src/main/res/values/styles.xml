@@ -1,0 +1,211 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorAccent">@color/colorAccent</item>
+        <!--<item name="editTextStyle">@style/EditTextStyle</item>-->
+        <item name="buttonStyle">@style/Widget.AppCompat.Button</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+
+        <!-- Customize your theme here. -->
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowSoftInputMode">stateAlwaysHidden|adjustNothing</item>
+    </style>
+
+    <style name="dialog" parent="Base.DialogWindowTitle.AppCompat">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowFrame">@android:color/transparent</item>
+        <item name="android:windowIsFloating">true</item><!--浮在其他Activity之上-->
+        <item name="android:windowIsTranslucent">true</item><!--半透明-->
+        <item name="android:windowNoTitle">true</item><!--无标题-->
+        <item name="android:windowBackground">@android:color/transparent</item><!--背景透明-->
+        <item name="android:backgroundDimAmount">0.5</item><!--透明度 0.0f到1.0f。1.0完全不透明，0.0f完全透明-->
+        ！
+
+
+    </style>
+    <style name="EditTextStyle" parent="Widget.AppCompat.EditText">
+        <item name="android:textColor">@color/text_black</item>
+        <item name="android:background">@drawable/gray_exitext_rect</item>
+        <item name="android:textSize">@dimen/text_normal</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:textColorHint">@color/metal_gray</item>
+    </style>
+
+    <style name="edit_style">
+        <!-- Customize your theme here. -->
+        <item name="android:maxLength">50</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:imeOptions">actionNext</item>
+        <item name="android:textSize">@dimen/text_nromal</item>
+        <item name="android:textColor">@android:color/black</item>
+    </style>
+    <style name="button">
+        <item name="android:background">@drawable/rect_blue_bt</item>
+    </style>
+
+    <style name="etditext_defaut_style">
+        <item name="android:textColor">@color/text_black</item>
+        <item name="android:background">@drawable/et_default_style</item>
+        <item name="android:textSize">@dimen/text_normal</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:textColorHint">@color/metal_gray</item>
+
+    </style>
+
+    <style name="super_text_style">
+
+        <item name="android:background">@color/bondex_blue_accent</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:paddingTop">@dimen/button_padding_top</item>
+        <item name="android:paddingBottom">@dimen/button_padding_top</item>
+        <item name="android:paddingLeft">@dimen/button_padding_left</item>
+        <item name="android:paddingRight">@dimen/button_padding_left</item>
+
+    </style>
+
+    <style name="button_primary_theme" parent="Base.TextAppearance.AppCompat.Button">
+        <item name="android:layout_height">50dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:background">@drawable/bt_blue_selector</item>
+        <item name="android:textSize">@dimen/text_nromal</item>
+        <item name="android:textColor">@color/white_back</item>
+    </style>
+
+    <style name="button_gray_theme" parent="Base.TextAppearance.AppCompat.Button">
+        <item name="android:layout_height">50dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:background">@drawable/bt_gray_selector</item>
+        <item name="android:textSize">@dimen/text_nromal</item>
+        <item name="android:textColor">@color/text_gray</item>
+    </style>
+
+
+    <style name="normal_tv_gray">
+
+        <item name="android:textColor">@color/text_gray</item>
+        <item name="android:textSize">@dimen/text_nromal</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:ellipsize">middle</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+    <style name="normal_tv_primary">
+
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textSize">@dimen/text_nromal</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:ellipsize">middle</item>
+        <item name="android:singleLine">true</item>
+    </style>
+    <style name="small_tv_white">
+        <item name="android:textColor">@color/white_back</item>
+        <item name="android:textSize">@dimen/text_small</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:ellipsize">middle</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+
+    <style name="small_tv_gray">
+        <item name="android:textColor">@color/text_gray</item>
+        <item name="android:textSize">@dimen/text_small</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:ellipsize">middle</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+
+    <style name="small_tv_black">
+        <item name="android:textColor">@color/text_black</item>
+        <item name="android:textSize">@dimen/text_small</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:ellipsize">middle</item>
+        <item name="android:singleLine">true</item>
+    </style>
+    <style name="small_tv_primary">
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textSize">@dimen/text_small</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:ellipsize">middle</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+
+    <style name="normal_tv_white">
+        <item name="android:textColor">@color/light_gray</item>
+        <item name="android:textSize">@dimen/text_nromal</item>
+        <item name="android:ellipsize">middle</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+    <style name="normal_tv_red">
+        <item name="android:textSize">@dimen/text_normal</item>
+        <item name="android:ellipsize">middle</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">@color/flb_color</item>
+    </style>
+    <style name="small_tv_red">
+        <item name="android:ellipsize">middle</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textSize">@dimen/text_small</item>
+        <item name="android:textColor">@color/flb_color</item>
+    </style>
+    <style name="normal_tv_black">
+        <item name="android:ellipsize">middle</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textSize">@dimen/text_normal</item>
+        <item name="android:textColor">@color/text_black</item>
+    </style>
+    <style name="large_tv_black">
+        <item name="android:ellipsize">middle</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textSize">@dimen/text_large</item>
+        <item name="android:textColor">@color/text_black</item>
+    </style>
+    <style name="large_tv_white">
+        <item name="android:ellipsize">middle</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textSize">@dimen/text_large</item>
+        <item name="android:textColor">@color/white_back</item>
+    </style>
+    <style name="icon">
+        <item name="android:textSize">@dimen/icon_large</item>
+        <item name="android:textColor">@color/white_back</item>
+    </style>
+
+    <style name="icon_gray">
+
+        <item name="android:textSize">@dimen/icon_normal</item>
+        <item name="android:textColor">@color/text_gray</item>
+    </style>
+
+    <style name="icon_black">
+
+        <item name="android:textSize">@dimen/icon_small</item>
+        <item name="android:textColor">@color/text_black</item>
+    </style>
+    <style name="primary_checkbox" parent="@android:style/Widget.Material.CompoundButton.CheckBox"
+           tools:ignore="NewApi">
+        <item name="android:colorControlActivated">@color/colorPrimary</item>
+        <item name="android:colorControlNormal">@color/metal_gray</item>
+
+    </style>
+
+    <style name="white_checkbox"
+           tools:ignore="NewApi">
+        <item name="android:colorControlActivated">@color/white_back</item>
+        <item name="android:colorControlNormal">@color/colorWhite</item>
+
+    </style>
+    <style name="bt_login">
+        <item name="android:background">@mipmap/login_btn</item>
+        <item name="android:textSize">@dimen/text_nromal</item>
+        <item name="android:textColor">@color/white_back</item>
+        <item name="android:typeface">monospace</item>
+    </style>
+
+
+</resources>
