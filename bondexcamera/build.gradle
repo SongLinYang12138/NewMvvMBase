@@ -3,12 +3,12 @@ apply plugin: 'com.android.library'
 
 def config = rootProject.ext
 android {
-    compileSdkVersion  config.targetSdkVersion
+    compileSdkVersion config.targetSdkVersion
 
 
     defaultConfig {
         minSdkVersion config.minSdkVersion
-        targetSdkVersion  config.targetSdkVersion
+        targetSdkVersion config.targetSdkVersion
         versionCode 1
         versionName "1.0"
 
@@ -28,8 +28,7 @@ android {
 def depend = config.dependencies
 dependencies {
 
-    implementation depend.appcompat
-    implementation depend.constraintlayout
+    implementation project(":library")
     implementation project(':databaselibrary')
     implementation project(":styleibrary")
 }

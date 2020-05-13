@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
-        android:name=".app.PhotoApplication"
+        android:name="com.bondex.library.app.PhotoApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -15,15 +15,17 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".test.TestActivity">
+        <activity android:name=".LauncherActivity"
+            android:theme="@style/AppTheme.Launcher"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
-        <activity android:name=".MainActivity">
+        <activity android:name=".test.TestActivity"></activity>
+        <activity android:name=".main.MainActivity">
 
         </activity>
     </application>

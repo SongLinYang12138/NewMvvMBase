@@ -16,6 +16,9 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
     }
+    dataBinding {
+        enabled = true
+    }
 
     buildTypes {
         release {
@@ -35,6 +38,8 @@ dependencies {
     api depend.recyclerview
     api depend.avi
     api depend.logger
+    api depend.llifecycle
+    api depend.okhttp
 
     implementation project(":styleibrary")
     testImplementation 'junit:junit:4.12'

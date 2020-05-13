@@ -1,7 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme" parent="QMUI.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorAccent">@color/colorAccent</item>
         <!--<item name="editTextStyle">@style/EditTextStyle</item>-->
@@ -11,6 +11,11 @@
         <!-- Customize your theme here. -->
         <item name="windowNoTitle">true</item>
         <item name="android:windowSoftInputMode">stateAlwaysHidden|adjustNothing</item>
+    </style>
+
+    <style name="AppTheme.Launcher">
+<item name="android:windowFullscreen">true</item>
+<item name="android:windowBackground">@mipmap/launcher</item>
     </style>
 
     <style name="dialog" parent="Base.DialogWindowTitle.AppCompat">

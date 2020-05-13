@@ -10,23 +10,30 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.bondex.library.util.StatusBarUtil;
+import com.bondex.library.util.ToastUtils;
 import com.bondex.ysl.camera.compross.Luban;
 import com.bondex.ysl.camera.ui.CameraSingleton;
 import com.bondex.ysl.camera.ui.CameraView;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * date: 2019/7/17
@@ -62,17 +69,29 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     /**
      * 拍照的图片的数量
      */
-    private ArrayList<CharSequence> takeImgs = new ArrayList<>();
+    private ArrayList<String> takeImgs = new ArrayList<>();
 
 
     private String file_path = null;
-    private ExecutorService saveExecutors;
+    private ThreadPoolExecutor saveExecutors;
+    private BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(2);
     public static final String FINISH_KEY = "result";
     private ImageView ivTakePituer, ivCancel, ivBack, ivAuto, ivRotation;
 
     private RelativeLayout rlTakStatus, rlTakePhoto, rlTakePictureBottom;
     private LinearLayout llChoosePicture;
     private TextView tvCancel, tvFinish;
+
+    Handler finishHandler = new Handler() {
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+
+            ivImg.setClickable(true);
+            onFinish();
+        }
+    };
 
 
     @Override
@@ -106,7 +125,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
         takeImgs.clear();
         tvAuto = (TextView) findViewById(R.id.tv_auto);
-        saveExecutors = Executors.newFixedThreadPool(4);
+        saveExecutors = new ThreadPoolExecutor(3, 5, 3, TimeUnit.SECONDS, workQueue);
 
         ivAuto.setOnClickListener(this);
         ivTakePituer.setOnClickListener(this);
@@ -121,6 +140,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
         file_path = getBaseContext().getExternalFilesDir(Environment.DIRECTORY_DCIM) + File.separator + "img";
         Log.i("aaa", " filepath " + file_path);
+
+        initStatusBar();
     }
 
 
@@ -128,6 +149,12 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
 
     }
+
+    private void initStatusBar() {
+
+        StatusBarUtil.setColor(this, getResources().getColor(R.color.black_panit));
+    }
+
 
     @Override
     protected void onResume() {
@@ -139,6 +166,38 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 cameraView.onResume();
             }
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+//                autoTake();
+
+    }
+
+    public void autoTake() {
+
+        boolean take = new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                takePicture();
+                atuoSave();
+            }
+        }, 1000);
+
+    }
+
+    public void atuoSave() {
+
+        boolean save = new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                savePicture();
+            }
+        }, 1000);
+
     }
 
     @Override
@@ -188,11 +247,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      * @param v
      */
 
-
     @Override
     public void onClick(View v) {
-
-
         int i = v.getId();//拍照
 //取消
 //完成
@@ -202,55 +258,22 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 //自动
 //镜头切换
         if (i == R.id.takepicture) {
-            /**
-             * 如果拍照的数量达到上限 则不能继续拍照
-             */
-//            if (takeImgs.size() >= MaxTakePictureNum) {
-//                Toast.makeText(CameraActivity.this, "只能拍" + MaxTakePictureNum + "张图片", Toast.LENGTH_SHORT).show();
-//                return;
-//            }
-//            不对拍照做强行限制，
 
-            /**
-             * 执行拍照 并且将拍照按钮设置不可点击
-             */
-            ivTakePituer.setClickable(false);
-            CameraSingleton.getInstance().takePicture(new CameraSingleton.TakePictureCallback() {
-                @Override
-                public void captureResult(Bitmap bitmap) {
-                    iv_picture.setImageBitmap(bitmap);
-                    //设置显示  是否确认的布局
-                    setLayoutStatus(true);
-                }
-            });
+
+            takePicture();
         } else if (i == R.id.tv_cancel_take_pic) {
 
             cancel();
-        } else if (i == R.id.tv_finish_take_pic) {//拍照完成，准备返回数据
 
-            /**
-             * 返回数据
-             */
-            onFinish();
+        } else if (i == R.id.tv_finish_take_pic) {
+//拍照完成，准备返回数据
+            takePicture();
         } else if (i == R.id.iv_cancel) {
             setLayoutStatus(false);
         } else if (i == R.id.iv_back) {
             delTakePictures();
         } else if (i == R.id.iv_confirm) {
-            iv_picture.setDrawingCacheEnabled(true);
-            Bitmap bitmap = Bitmap.createBitmap(iv_picture.getDrawingCache());
-
-            iv_picture.setDrawingCacheEnabled(false);
-
-            if (bitmap != null) {
-
-                //设置标题的文本
-//                tvTitle.setText((takeImgs.size() + 1) + "/" + MaxTakePictureNum);
-                saveBitmap(bitmap);
-
-            }
-
-            setLayoutStatus(false);
+            savePicture();
         } else if (i == R.id.tv_auto || i == R.id.iv_auto) {
 
 
@@ -283,6 +306,49 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 }
             });
         }
+    }
+
+
+    /**
+     * 拍照
+     */
+    private void takePicture() {
+        Log.i("aaa", "拍照");
+        /**
+         * 执行拍照 并且将拍照按钮设置不可点击
+         */
+        ivTakePituer.setClickable(false);
+        CameraSingleton.getInstance().takePicture(new CameraSingleton.TakePictureCallback() {
+            @Override
+            public void captureResult(Bitmap bitmap) {
+                iv_picture.setImageBitmap(bitmap);
+                //设置显示  是否确认的布局
+                setLayoutStatus(true);
+            }
+        });
+    }
+
+    /**
+     * 保存照片
+     */
+    private void savePicture() {
+        iv_picture.setDrawingCacheEnabled(true);
+        Bitmap bitmap = Bitmap.createBitmap(iv_picture.getDrawingCache());
+
+        iv_picture.setDrawingCacheEnabled(false);
+
+        if (bitmap != null) {
+
+            //设置标题的文本
+//                tvTitle.setText((takeImgs.size() + 1) + "/" + MaxTakePictureNum);
+            saveBitmap(bitmap);
+
+        }
+        ivImg.setClickable(false);
+        ToastUtils.showToast("正在保存");
+//        拍完后直接保存返回
+//        setLayoutStatus(false);
+
     }
 
     /**
@@ -318,41 +384,18 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
         Intent intent = new Intent();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
-            intent.putCharSequenceArrayListExtra(FINISH_KEY, takeImgs);
+            intent.putStringArrayListExtra(FINISH_KEY, takeImgs);
         }
         setResult(RESULT_OK, intent);
         finish();
     }
 
-//    @Override
-//    public void onBackPressed() {
-////        if (isShowConfirmLayout) {//如果是确认状态下 返回显示拍照界面
-////            //如果取消的图片已经保存过 则需要在链表中删除
-////            setLayoutStatus(false);
-////        } else {
-//
-//
-//        super.onBackPressed();
-////        }
-//    }
 
     /**
      * 删除 拍照的图片
      */
     private void delTakePictures() {
         //如果取消的图片已经保存过 则需要在链表中删除
-//        if(takeImgs.size()==imgs.size()){
-//            deleteDir(new File(imgs.get(imgs.size()-1).sourcePath));
-//            imgs.remove(takeImgs.size() - 1);
-//            if (imgs.size() > 0) {
-//                rlvImg.setVisibility(View.VISIBLE);
-//            } else {
-//                rlvImg.setVisibility(View.GONE);
-//            }
-//            adapter.notifyDataSetChanged();
-//        }
-//        takeImgs.remove(takeImgs.size() - 1);
-
         setLayoutStatus(false);
 
         cancel();
@@ -410,8 +453,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                     e.printStackTrace();
                 }
 //                调用鲁班压缩，
-                Luban.with(CameraActivity.this).ignoreBy(100).setTargetDir(f.getAbsolutePath()).load(f).get();
-
+//                Luban.with(CameraActivity.this).ignoreBy(100).setTargetDir(f.getAbsolutePath()).load(f).get();
+                finishHandler.sendEmptyMessage(1);
                 Log.i("aaa", "照片路径 " + f.getAbsolutePath());
 
 

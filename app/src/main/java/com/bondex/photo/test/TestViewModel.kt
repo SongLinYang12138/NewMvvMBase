@@ -1,12 +1,10 @@
 package com.bondex.photo.test
 
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.databinding.ObservableField
-import com.bondex.library.util.CommonUtils
-import com.bondex.photo.app.PhotoApplication
-import com.bondex.photo.base.BaseViewMode
+import com.bondex.library.app.PhotoApplication
+import com.bondex.library.base.BaseViewMode
 
 
 /**

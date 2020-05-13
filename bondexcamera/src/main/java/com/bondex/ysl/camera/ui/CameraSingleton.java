@@ -137,7 +137,9 @@ public class CameraSingleton {
     }
 
     public void startPreView() {
-        if (mHolder == null) return;
+        if (mHolder == null) {
+            return;
+        }
 //        try {
 //            mCamera.setPreviewDisplay(mHolder);
 //        } catch (IOException e) {

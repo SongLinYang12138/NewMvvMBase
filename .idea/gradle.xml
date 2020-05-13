@@ -11,9 +11,11 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/bondex-zxing-embedded" />
             <option value="$PROJECT_DIR$/bondexcamera" />
             <option value="$PROJECT_DIR$/databaselibrary" />
             <option value="$PROJECT_DIR$/library" />
+            <option value="$PROJECT_DIR$/qmui" />
             <option value="$PROJECT_DIR$/styleibrary" />
           </set>
         </option>

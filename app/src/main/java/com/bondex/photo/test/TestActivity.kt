@@ -1,11 +1,8 @@
 package com.bondex.photo.test
 
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import androidx.databinding.DataBindingUtil
 import com.bondex.photo.BR
 import com.bondex.photo.R
-import com.bondex.photo.base.BaseActivity
+import com.bondex.library.base.BaseActivity
 import com.bondex.photo.databinding.ActivityTestBinding
 
 class TestActivity : BaseActivity<ActivityTestBinding, TestViewModel>() {

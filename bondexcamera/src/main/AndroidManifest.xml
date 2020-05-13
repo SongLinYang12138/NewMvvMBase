@@ -8,7 +8,9 @@
     <application>
 
 
-        <activity android:name=".CameraActivity"/>
+        <activity android:name=".CameraActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            />
 
     </application>
 

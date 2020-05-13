@@ -3,31 +3,90 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <data>
+
+        <variable
+            name="mainModel"
+            type="com.bondex.photo.main.MainViewModel" />
+
+    </data>
+
+    <com.qmuiteam.qmui.widget.QMUIEmptyView
+        android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".MainActivity">
+        tools:context=".main.MainActivity">
 
-        <include layout="@layout/base_title_layout"></include>
+        <include
+            android:id="@+id/title"
+            layout="@layout/base_title_layout"></include>
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:paddingHorizontal="@dimen/activity_horizontal_margin"
+            android:paddingVertical="@dimen/activity_horizontal_margin"
+            app:layout_constraintTop_toBottomOf="@id/title"
+            app:layout_constraintBottom_toTopOf="@id/tv_description"
+            app:layout_constraintVertical_weight="1"
+            >
+            <com.qmuiteam.qmui.widget.QMUIRadiusImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitCenter"
+                android:src="@mipmap/banner"
+                />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <Button
-            android:id="@+id/btn_camera"
+        <TextView
+
+            android:id="@+id/tv_description"
+            style="@style/small_tv_red"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="拍照"
+            android:text="扫描PC端的二维码，与服务器建立联系"
+            app:layout_constraintBottom_toTopOf="@id/it_scan"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+
+        <com.bondex.library.ui.IconText
+            android:id="@+id/it_scan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/scan"
+            android:textSize="70sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.4" />
+
+
+        <com.qmuiteam.qmui.widget.QMUIRadiusImageView2
+            android:id="@+id/img_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="@dimen/activity_horizontal_margin"
+            android:padding="@dimen/activity_horizontal_margin"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/icon_theme"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:qmui_border_width="1dp">
+
+
+        </com.qmuiteam.qmui.widget.QMUIRadiusImageView2>
+
 
         <com.wang.avi.AVLoadingIndicatorView
             android:id="@+id/avl_loading"
             android:layout_width="60dp"
             android:layout_height="60dp"
+            android:visibility="gone"
             app:indicatorColor="@color/colorPrimary"
             app:indicatorName="@string/indicatorname"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.qmuiteam.qmui.widget.QMUIEmptyView>
 </layout>

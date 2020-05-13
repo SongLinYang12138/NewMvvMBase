@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/colorPrimary"
+    android:fitsSystemWindows="true">
+
+    <com.bondex.library.ui.IconText
+        android:id="@+id/title_it_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:text="@string/arrow_left"
+        android:textColor="@color/colorWhite"
+        android:textSize="@dimen/icon_normal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"></com.bondex.library.ui.IconText>
+
+    <TextView
+
+        android:id="@+id/title_tv_title"
+        style="@style/normal_tv_white"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="title"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+
+        />
+
+    <com.bondex.library.ui.IconText
+        android:id="@+id/title_it_right"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        style="@style/normal_tv_white"
+        android:textSize="@dimen/icon_normal"
+        android:text="@string/camera"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

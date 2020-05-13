@@ -111,6 +111,8 @@ public class CameraParamUtil {
     }
 
     private class CameraSizeComparator implements Comparator<Camera.Size> {
+
+
         public int compare(Camera.Size lhs, Camera.Size rhs) {
             if (lhs.width == rhs.width) {
                 return 0;
@@ -120,6 +122,5 @@ public class CameraParamUtil {
                 return -1;
             }
         }
-
     }
 }
