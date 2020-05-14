@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  * description:并发处理解码速度
  */
 public class ConcurrentDecodeThread {
-    private static final String TAG = DecoderThread.class.getSimpleName();
+    private static final String TAG = ConcurrentDecodeThread.class.getSimpleName();
 
     //线程池
 
@@ -64,9 +64,12 @@ public class ConcurrentDecodeThread {
     private final Handler.Callback callback = new Handler.Callback() {
         @Override
         public boolean handleMessage(Message message) {
-            if (message.what == R.id.zxing_decode) {
-                decode((SourceData) message.obj);
-            } else if (message.what == R.id.zxing_preview_failed) {
+//            这一步由线程池去做并发处理
+//            if (message.what == R.id.zxing_decode) {
+//                decode((SourceData) message.obj);
+//            } else
+//
+            if (message.what == R.id.zxing_preview_failed) {
                 // Error already logged. Try again.
                 requestNextPreview();
             }
@@ -126,6 +129,7 @@ public class ConcurrentDecodeThread {
 
         synchronized (LOCK) {
             running = false;
+            executor.shutdownNow();
             handler.removeCallbacksAndMessages(null);
             thread.quit();
         }
@@ -189,6 +193,8 @@ public class ConcurrentDecodeThread {
             rawResult = decoder.decode(source);
         }
 
+        Log.e("aaa", rawResult == null ? "解析失败" : rawResult.getText());
+
         if (rawResult != null) {
             // Don't log the barcode contents for security.
             long end = System.currentTimeMillis();
@@ -216,7 +222,7 @@ public class ConcurrentDecodeThread {
 
     private class DecodeRunnable implements Runnable {
 
-        SourceData sourceData;
+        private SourceData sourceData;
 
         public void setSourceData(SourceData sourceData) {
             this.sourceData = sourceData;

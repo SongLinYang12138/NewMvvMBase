@@ -31,7 +31,7 @@ public final class DecodeFormatManager {
 
     private static final Pattern COMMA_PATTERN = Pattern.compile(",");
 //只保留二维码解析和code128t条形码解析
-    //    static final Set<BarcodeFormat> PRODUCT_FORMATS;
+//        static final Set<BarcodeFormat> PRODUCT_FORMATS;
     static final Set<BarcodeFormat> INDUSTRIAL_FORMATS;
     private static final Set<BarcodeFormat> ONE_D_FORMATS;
     static final Set<BarcodeFormat> QR_CODE_FORMATS = EnumSet.of(BarcodeFormat.QR_CODE);
