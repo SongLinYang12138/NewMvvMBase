@@ -16,11 +16,9 @@ public class ToastUtils {
         if (CommonUtils.isEmpty(msg)) {
             return;
         }
-        if (PhotoApplication.context == null) {
-            return;
-        }
 
-        Toast.makeText(PhotoApplication.context, msg, Toast.LENGTH_SHORT).show();
+
+        Toast.makeText(PhotoApplication.getContext(), msg, Toast.LENGTH_SHORT).show();
 
 
     }

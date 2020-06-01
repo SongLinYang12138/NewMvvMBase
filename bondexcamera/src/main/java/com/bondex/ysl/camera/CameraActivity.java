@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,6 +25,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.bondex.library.util.CommonUtils;
 import com.bondex.library.util.StatusBarUtil;
 import com.bondex.library.util.ToastUtils;
 import com.bondex.ysl.camera.compross.Luban;
@@ -46,12 +50,15 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     public static void startActivityForResult(Activity activity, ISCameraConfig config, int requestCode) {
 
         Intent intent = new Intent(activity, CameraActivity.class);
+
+        intent.putExtra(LIST_KEY, config);
         activity.startActivityForResult(intent, requestCode);
     }
 
     public static void startActivityFroResult(Fragment fragment, ISCameraConfig config, int requestCode) {
 
         Intent intent = new Intent(fragment.getActivity(), CameraActivity.class);
+        intent.putExtra(LIST_KEY, config);
         fragment.getActivity().startActivityForResult(intent, requestCode);
     }
 
@@ -61,6 +68,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private static final int REQUEST_PERMISSION = 113;
     private CameraView cameraView;
     private boolean granted = false;
+    private int cameraRatio;
+    private ISCameraConfig config;
 
     private ImageView iv_picture;
     private ImageView ivImg;
@@ -72,15 +81,15 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private ArrayList<String> takeImgs = new ArrayList<>();
 
 
-    private String file_path = null;
-    private ThreadPoolExecutor saveExecutors;
-    private BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(2);
     public static final String FINISH_KEY = "result";
     private ImageView ivTakePituer, ivCancel, ivBack, ivAuto, ivRotation;
 
     private RelativeLayout rlTakStatus, rlTakePhoto, rlTakePictureBottom;
     private LinearLayout llChoosePicture;
     private TextView tvCancel, tvFinish;
+    private boolean canFinish = false;
+    private String curentFilePath;
+
 
     Handler finishHandler = new Handler() {
 
@@ -88,8 +97,12 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
 
+            if (config != null && config.isAutoTak) {
+
+                onFinish();
+            }
             ivImg.setClickable(true);
-            onFinish();
+
         }
     };
 
@@ -99,7 +112,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         initData();
-
 
         rlTakStatus = findViewById(R.id.rl_take_staus);
         rlTakePhoto = findViewById(R.id.rl_take_photo);
@@ -125,7 +137,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
         takeImgs.clear();
         tvAuto = (TextView) findViewById(R.id.tv_auto);
-        saveExecutors = new ThreadPoolExecutor(3, 5, 3, TimeUnit.SECONDS, workQueue);
 
         ivAuto.setOnClickListener(this);
         ivTakePituer.setOnClickListener(this);
@@ -138,9 +149,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         tvAuto.setOnClickListener(this);
 
 
-        file_path = getBaseContext().getExternalFilesDir(Environment.DIRECTORY_DCIM) + File.separator + "img";
-        Log.i("aaa", " filepath " + file_path);
-
         initStatusBar();
     }
 
@@ -148,6 +156,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private void initData() {
 
 
+        config = getIntent().getParcelableExtra(LIST_KEY);
     }
 
     private void initStatusBar() {
@@ -172,8 +181,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     protected void onStart() {
         super.onStart();
 
-//                autoTake();
-
+        if (config.isAutoTak) {
+            autoTake();
+        }
     }
 
     public void autoTake() {
@@ -184,7 +194,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 takePicture();
                 atuoSave();
             }
-        }, 1000);
+        }, 2000);
 
     }
 
@@ -196,7 +206,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
                 savePicture();
             }
-        }, 1000);
+        }, 2000);
 
     }
 
@@ -214,6 +224,17 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         Log.i("JCameraView", "onDestroy");
 
 
+    }
+
+    private void playAutdio() {
+
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(this, notification);
+            r.play();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -259,20 +280,22 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 //镜头切换
         if (i == R.id.takepicture) {
 
-
+            playAutdio();
             takePicture();
         } else if (i == R.id.tv_cancel_take_pic) {
 
             cancel();
-
         } else if (i == R.id.tv_finish_take_pic) {
 //拍照完成，准备返回数据
-            takePicture();
+            onFinish();
+
         } else if (i == R.id.iv_cancel) {
+            delete();
             setLayoutStatus(false);
         } else if (i == R.id.iv_back) {
             delTakePictures();
         } else if (i == R.id.iv_confirm) {
+            setLayoutStatus(false);
             savePicture();
         } else if (i == R.id.tv_auto || i == R.id.iv_auto) {
 
@@ -320,10 +343,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         ivTakePituer.setClickable(false);
         CameraSingleton.getInstance().takePicture(new CameraSingleton.TakePictureCallback() {
             @Override
-            public void captureResult(Bitmap bitmap) {
+            public void captureResult(Bitmap bitmap, String filePath) {
+
+                curentFilePath = filePath;
                 iv_picture.setImageBitmap(bitmap);
                 //设置显示  是否确认的布局
                 setLayoutStatus(true);
+
             }
         });
     }
@@ -332,21 +358,18 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      * 保存照片
      */
     private void savePicture() {
-        iv_picture.setDrawingCacheEnabled(true);
-        Bitmap bitmap = Bitmap.createBitmap(iv_picture.getDrawingCache());
 
-        iv_picture.setDrawingCacheEnabled(false);
-
-        if (bitmap != null) {
-
-            //设置标题的文本
-//                tvTitle.setText((takeImgs.size() + 1) + "/" + MaxTakePictureNum);
-            saveBitmap(bitmap);
-
+        if(CommonUtils.isEmpty(curentFilePath)){
+            ToastUtils.showToast("请先拍照");
+            return;
         }
         ivImg.setClickable(false);
         ToastUtils.showToast("正在保存");
-//        拍完后直接保存返回
+
+        takeImgs.add(curentFilePath);
+        finishHandler.sendEmptyMessage(1);
+
+        //        拍完后直接保存返回
 //        setLayoutStatus(false);
 
     }
@@ -371,11 +394,14 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         //surfaceview
         cameraView.setVisibility(isShowConfirmPhtoGraph ? View.GONE : View.VISIBLE);
 
+        if (!isShowConfirmPhtoGraph) {
+            CameraSingleton.getInstance().autoCameraFocus();
+        }
+
         //图片的预览
         iv_picture.setVisibility(isShowConfirmPhtoGraph ? View.VISIBLE : View.GONE);
         listView.setVisibility(isShowConfirmPhtoGraph ? View.VISIBLE : View.GONE);
         ivTakePituer.setClickable(!isShowConfirmPhtoGraph);
-//                判断改照片属于哪一个分单号
 
 
     }
@@ -401,65 +427,15 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         cancel();
     }
 
-    public void saveBitmap(final Bitmap bitmap) {
+    private void delete() {
 
-
-        final Bitmap mBitmap = bitmap;
-
-
-        saveExecutors.execute(new Runnable() {
-            @Override
-            public void run() {
-
-
-                String fileName = System.currentTimeMillis() + ".png";
-//                String comprossNam = System.currentTimeMillis() + "_" + hawbBean.getHawb() + ".png";
-//                comprossNam = comprossNam.replaceAll(" ", comprossNam);
-                String path = file_path + File.separator;
-
-                File file = new File(file_path);
-
-                if (!file.exists()) {
-                    file.mkdirs();
-                }
-
-
-                File f = new File(path + fileName);
-                try {
-                    f.createNewFile();
-                    Log.e(TAG, "创建照片" + f.getAbsolutePath());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                FileOutputStream fOut = null;
-                try {
-                    fOut = new FileOutputStream(f);
-                    mBitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-
-                if (fOut == null) {
-                    return;
-                }
-
-
-                try {
-                    takeImgs.add(f.getAbsolutePath());
-                    fOut.flush();
-                    fOut.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-//                调用鲁班压缩，
-//                Luban.with(CameraActivity.this).ignoreBy(100).setTargetDir(f.getAbsolutePath()).load(f).get();
-                finishHandler.sendEmptyMessage(1);
-                Log.i("aaa", "照片路径 " + f.getAbsolutePath());
-
-
+        if (CommonUtils.isNotEmpty(curentFilePath)) {
+            File file = new File(curentFilePath);
+            if (file.exists()) {
+                file.delete();
             }
-        });
+
+        }
 
     }
 
@@ -469,42 +445,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         deleteTask.execute();
     }
 
-    //压缩宽高
-    private int computeSize(int srcWidth, int srcHeight) {
-        srcWidth = srcWidth % 2 == 1 ? srcWidth + 1 : srcWidth;
-        srcHeight = srcHeight % 2 == 1 ? srcHeight + 1 : srcHeight;
 
-        int longSide = Math.max(srcWidth, srcHeight);
-        int shortSide = Math.min(srcWidth, srcHeight);
-
-        float scale = ((float) shortSide / longSide);
-        if (scale <= 1 && scale > 0.5625) {
-            if (longSide < 1664) {
-                return 1;
-            } else if (longSide < 4990) {
-                return 2;
-            } else if (longSide > 4990 && longSide < 10240) {
-                return 4;
-            } else {
-                return longSide / 1280 == 0 ? 1 : longSide / 1280;
-            }
-        } else if (scale <= 0.5625 && scale > 0.5) {
-            return longSide / 1280 == 0 ? 1 : longSide / 1280;
-        } else {
-            return (int) Math.ceil(longSide / (1280.0 / scale));
-        }
-    }
-
-    /*
-     *旋转图片角度
-     * */
-    private Bitmap rotatingImage(Bitmap bitmap, int angle) {
-        Matrix matrix = new Matrix();
-
-        matrix.postRotate(angle);
-
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-    }
 
     /*
      * 取消或返回时，删除以保存的照片信息
@@ -512,7 +453,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private class DeleteTask extends AsyncTask {
         @Override
         protected Object doInBackground(Object[] objects) {
-
 
             try {
 

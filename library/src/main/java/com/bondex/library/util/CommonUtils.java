@@ -40,10 +40,9 @@ public class CommonUtils {
         DisplayMetrics dm = new DisplayMetrics();
         wm.getDefaultDisplay().getMetrics(dm);
 
-        int width = dm.widthPixels;
-        float denisty = dm.density;
+        int height = dm.heightPixels;
 
-        return (int) (width / denisty);
+        return height;
     }
 
     public static boolean isEmpty(String str) {

@@ -320,6 +320,8 @@ public final class CameraManager {
         for (Camera.Size size : rawSupportedSizes) {
             previewSizes.add(new Size(size.width, size.height));
         }
+
+
         return previewSizes;
     }
 

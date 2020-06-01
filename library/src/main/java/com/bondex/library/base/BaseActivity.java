@@ -2,8 +2,11 @@ package com.bondex.library.base;
 
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+
 import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,13 +17,20 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.bondex.library.R;
+import com.bondex.library.app.PhotoApplication;
 import com.bondex.library.ui.IconText;
 import com.bondex.library.util.CommonUtils;
 import com.bondex.library.util.NoDoubleClickListener;
 
+import com.bondex.library.util.StatusBarUtil;
+import com.bondex.library.util.ToastUtils;
+import com.qmuiteam.qmui.widget.dialog.QMUITipDialog;
 import com.wang.avi.AVLoadingIndicatorView;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+
+import static com.bondex.library.app.PhotoApplication.getContext;
 
 /**
  * date: 2020/4/23
@@ -39,9 +49,30 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
 
     private Observer<Boolean> loadingObserver = new Observer<Boolean>() {
         @Override
-        public void onChanged(Boolean loading) {
+        public void onChanged(Boolean isShow) {
+
+            if (loading != null) {
+                Log.i("aaa", " showload" + isShow);
+                loading.setVisibility(isShow ? View.VISIBLE : View.GONE);
+            }
 
 
+        }
+    };
+    private Observer<String> toastObserver = new Observer<String>() {
+        @Override
+        public void onChanged(String s) {
+
+            Log.i("aaa", " toastObserver  " + s);
+            showDialog(s);
+        }
+    };
+
+    private Observer<String> msgObserver = new Observer<String>() {
+        @Override
+        public void onChanged(String s) {
+
+            handleMsg(s);
         }
     };
 
@@ -49,6 +80,7 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        initStatusBar();
         initViewModel();
         performDataBinding();
         initView();
@@ -61,6 +93,11 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
         super.onStart();
 
         initObserver();
+    }
+
+    private void initStatusBar() {
+
+        StatusBarUtil.setColor(this, getResources().getColor(R.color.colorPrimary));
     }
 
     @Override
@@ -79,7 +116,7 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
         itBack = view.findViewById(R.id.title_it_back);
         tvTitle = view.findViewById(R.id.title_tv_title);
         itRight = view.findViewById(R.id.title_it_right);
-//        loading = view.findViewById(R.id.avl_loading);
+        loading = view.findViewById(R.id.avl_loading);
 
         if (getBindingVariable() > 0) {
             binding.setVariable(getBindingVariable(), viewModel);
@@ -99,6 +136,7 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
         }
         viewModel = (M) createViewModel(this, modelClass);
         viewModel.attachUi();
+        viewModel.setContext(getContext());
 //生命周期监听
         getLifecycle().addObserver(viewModel);
 
@@ -107,14 +145,20 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
     private void initObserver() {
 
         viewModel.loading.observe(this, loadingObserver);
-
+        viewModel.toastLiveData.observe(this, toastObserver);
+        viewModel.msgLiveData.observe(this,msgObserver);
     }
 
     private void removeObserver() {
 
         if (viewModel.loading.hasObservers()) {
-
             viewModel.loading.removeObserver(loadingObserver);
+        }
+        if (viewModel.toastLiveData.hasObservers()) {
+            viewModel.toastLiveData.removeObserver(toastObserver);
+        }
+        if(viewModel.msgLiveData.hasObservers()){
+            viewModel.msgLiveData.removeObserver(msgObserver);
         }
         getLifecycle().removeObserver(viewModel);
 
@@ -159,6 +203,12 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
 
     }
 
+    protected void showDialog(String msg) {
+
+        ToastUtils.showToast(msg);
+
+    }
+
 
     /**
      * 创建ViewModel
@@ -182,8 +232,11 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
     @LayoutRes
     protected abstract int getLayoutId();
 
-    protected  abstract void initView();
+    protected abstract void initView();
+
     protected abstract void initListener();
+
+    protected abstract void handleMsg(String msg);
 
 
 }

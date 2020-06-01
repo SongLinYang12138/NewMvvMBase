@@ -11,6 +11,8 @@
     <string name="arrow_down">&#xe668;</string>
     <string name="arrow_right">&#xe8f1;</string>
     <string name="arrow_left">&#xe8ef;</string>
+    <string name="arrow_top">&#xe8f7;</string>
+    <string name="upload">&#xe8c8;</string>
     <string name="main_menu">&#xe8bd;</string>
     <string name="camera">&#xe661;</string>
     <string name="search">&#xe8bb;</string>

@@ -11,41 +11,81 @@ import java.util.ArrayList;
  * Author: ysl
  * description:
  */
-public class ISCameraConfig{
+public class ISCameraConfig implements Parcelable {
 
-    private ArrayList<String> hawbs;
-
+    public int compressRatio;
+    public boolean isAutoTak;
 
 
     public ISCameraConfig(Builder builder) {
-
-        this.hawbs = builder.hawbBeans;
+        this.compressRatio = builder.compressRatio;
+        this.isAutoTak = builder.isAutoTak;
     }
 
+    protected ISCameraConfig(Parcel in) {
+        compressRatio = in.readInt();
+        isAutoTak = in.readByte() != 0;
+    }
 
-
-    public ArrayList<String> getHawbs() {
-        if (hawbs == null) {
-            return new ArrayList<>();
+    public static final Creator<ISCameraConfig> CREATOR = new Creator<ISCameraConfig>() {
+        @Override
+        public ISCameraConfig createFromParcel(Parcel in) {
+            return new ISCameraConfig(in);
         }
-        return hawbs;
+
+        @Override
+        public ISCameraConfig[] newArray(int size) {
+            return new ISCameraConfig[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(compressRatio);
+        dest.writeByte((byte) (isAutoTak ? 1 : 0));
     }
 
 
-
-    public static class Builder  {
-
-        private ArrayList<String> hawbBeans;
-
+    public static class Builder implements Parcelable {
+        private int compressRatio;
+        public boolean isAutoTak;
 
 
-        public Builder setHawbBeans(ArrayList<String> hawbBeans) {
-            this.hawbBeans = hawbBeans;
+        protected Builder(Parcel in) {
+            compressRatio = in.readInt();
+            isAutoTak = in.readByte() != 0;
+        }
 
+        public static final Creator<Builder> CREATOR = new Creator<Builder>() {
+            @Override
+            public Builder createFromParcel(Parcel in) {
+                return new Builder(in);
+            }
+
+            @Override
+            public Builder[] newArray(int size) {
+                return new Builder[size];
+            }
+        };
+
+        public Builder setCompressRatio(int compressRatio) {
+            this.compressRatio = compressRatio;
             return this;
         }
 
+        public Builder setAutotake(boolean isAutoTak) {
+            this.isAutoTak = isAutoTak;
+            return this;
+        }
 
+        public Builder() {
+
+        }
 
 
         public ISCameraConfig build() {
@@ -53,5 +93,16 @@ public class ISCameraConfig{
             return new ISCameraConfig(this);
         }
 
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeInt(compressRatio);
+            dest.writeByte((byte) (isAutoTak ? 1 : 0));
+        }
     }
 }

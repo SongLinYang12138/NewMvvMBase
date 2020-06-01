@@ -33,6 +33,8 @@ public class Luban implements Handler.Callback {
     private OnCompressListener mCompressListener;
     private CompressionPredicate mCompressionPredicate;
     private List<InputStreamProvider> mStreamProviders;
+    private int compressRatio;
+
 
     private Handler mHandler;
 
@@ -43,6 +45,8 @@ public class Luban implements Handler.Callback {
         this.mCompressListener = builder.mCompressListener;
         this.mLeastCompressSize = builder.mLeastCompressSize;
         this.mCompressionPredicate = builder.mCompressionPredicate;
+        this.focusAlpha = builder.focusAlpha;
+        this.compressRatio = builder.compressRatio;
         mHandler = new Handler(Looper.getMainLooper(), this);
     }
 
@@ -146,7 +150,7 @@ public class Luban implements Handler.Callback {
      */
     private File get(InputStreamProvider input, Context context) {
         try {
-            return new Engine(input, getImageCacheFile(context, Checker.SINGLE.extSuffix(input)), focusAlpha).compress();
+            return new Engine(input, getImageCacheFile(context, Checker.SINGLE.extSuffix(input)), focusAlpha, compressRatio).compress();
         } finally {
             input.close();
         }
@@ -185,12 +189,12 @@ public class Luban implements Handler.Callback {
         if (mCompressionPredicate != null) {
             if (mCompressionPredicate.apply(path.getPath())
                     && Checker.SINGLE.needCompress(mLeastCompressSize, path.getPath())) {
-                result = new Engine(path, outFile, focusAlpha).compress();
+                result = new Engine(path, outFile, focusAlpha, compressRatio).compress();
             } else {
                 result = new File(path.getPath());
             }
         } else {
-            result = new Engine(path, outFile, focusAlpha).compress();
+            result = new Engine(path, outFile, focusAlpha, compressRatio).compress();
         }
 
         return result;
@@ -198,7 +202,9 @@ public class Luban implements Handler.Callback {
 
     @Override
     public boolean handleMessage(Message msg) {
-        if (mCompressListener == null) return false;
+        if (mCompressListener == null) {
+            return false;
+        }
 
         switch (msg.what) {
             case MSG_COMPRESS_START:
@@ -219,6 +225,8 @@ public class Luban implements Handler.Callback {
         private String mTargetDir;
         private boolean focusAlpha;
         private int mLeastCompressSize = 100;
+        private int compressRatio = 60;
+
         private OnRenameListener mRenameListener;
         private OnCompressListener mCompressListener;
         private CompressionPredicate mCompressionPredicate;
@@ -325,6 +333,17 @@ public class Luban implements Handler.Callback {
          */
         public Builder setFocusAlpha(boolean focusAlpha) {
             this.focusAlpha = focusAlpha;
+            return this;
+        }
+
+        /**
+         * bitmap.compress的压缩比率,如果小于就是就不设置
+         */
+        public Builder setCompressRatio(int compressRatio) {
+
+            if (compressRatio >= 60) {
+                this.compressRatio = compressRatio;
+            }
             return this;
         }
 

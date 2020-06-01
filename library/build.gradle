@@ -41,9 +41,26 @@ dependencies {
     api depend.llifecycle
     api depend.okhttp
 
+    //    mqtt
+    api  depend.mq
+    api depend.gson
+
+    api depend.coordinatorlayout
+
+
+
+//    rxjava rxandroid
+    api depend.rxjava
+    api depend.rxAndroid
+
+    api project(':databaselibrary')
+
+    api depend.imageLoader
+
+
+
     implementation project(":styleibrary")
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation 'androidx.coordinatorlayout:coordinatorlayout:1.1.0'
 }

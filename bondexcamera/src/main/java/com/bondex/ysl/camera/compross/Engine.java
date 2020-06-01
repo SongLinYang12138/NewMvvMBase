@@ -19,11 +19,13 @@ class Engine {
     private int srcWidth;
     private int srcHeight;
     private boolean focusAlpha;
+    private int compressRatio;
 
-    Engine(InputStreamProvider srcImg, File tagImg, boolean focusAlpha) {
+    Engine(InputStreamProvider srcImg, File tagImg, boolean focusAlpha, int compressRatio) {
         this.tagImg = tagImg;
         this.srcImg = srcImg;
         this.focusAlpha = focusAlpha;
+        this.compressRatio = compressRatio;
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
@@ -82,8 +84,14 @@ class Engine {
 
             if (Checker.SINGLE.isJPG(srcImg.open())) {
                 tagBitmap = rotatingImage(tagBitmap, Checker.SINGLE.getOrientation(srcImg.open()));
+            } else {
+//                相机直接拍照保存下来的图片需要旋转90.
+                tagBitmap = rotatingImage(tagBitmap, 90);
+
             }
-            tagBitmap.compress(focusAlpha ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, 60, stream);
+
+            Log.i("aaa", "camerssRatio " + compressRatio);
+            tagBitmap.compress(focusAlpha ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, compressRatio, stream);
             tagBitmap.recycle();
 
 

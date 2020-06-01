@@ -18,7 +18,7 @@ class TestViewModel : BaseViewMode() {
 
     fun onSaveClick(view: View?) {
 
-        Toast.makeText(PhotoApplication.context, "点击", Toast.LENGTH_SHORT).show()
+        Toast.makeText(PhotoApplication.getContext(), "点击", Toast.LENGTH_SHORT).show()
     }
 
 

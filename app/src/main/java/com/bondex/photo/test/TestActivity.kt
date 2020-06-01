@@ -28,4 +28,8 @@ class TestActivity : BaseActivity<ActivityTestBinding, TestViewModel>() {
 
     }
 
+    override fun handleMsg(msg: String?) {
+
+    }
+
 }

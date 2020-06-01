@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.bondex.photo">
 
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -15,19 +16,20 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".LauncherActivity"
-            android:theme="@style/AppTheme.Launcher"
-            >
+        <activity android:name=".log.LogActivity"></activity>
+        <activity
+            android:name=".LauncherActivity"
+            android:theme="@style/AppTheme.Launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".test.TestActivity"></activity>
-        <activity android:name=".main.MainActivity">
+        <activity android:name=".test.TestActivity" />
+        <activity android:name=".main.MainActivity"></activity>
 
-        </activity>
+        <service android:name=".service.MqService" />
     </application>
 
 </manifest>

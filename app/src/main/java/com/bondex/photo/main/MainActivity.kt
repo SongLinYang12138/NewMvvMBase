@@ -1,134 +1,99 @@
 package com.bondex.photo.main
 
-import android.Manifest
 import android.app.Activity
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.checkSelfPermission
+import android.content.ServiceConnection
+import android.os.IBinder
+import android.util.Log
+import android.view.View
+import androidx.lifecycle.Observer
 import com.bondex.library.base.BaseActivity
-import com.bondex.library.util.StatusBarUtil
+import com.bondex.library.util.CommonUtils
+import com.bondex.library.util.NoDoubleClickListener
 import com.bondex.library.util.ToastUtils
 import com.bondex.photo.BR
+import com.bondex.photo.MQAidlCallBack
+import com.bondex.photo.MQAidlInterface
 import com.bondex.photo.R
 import com.bondex.photo.databinding.ActivityMainBinding
+import com.bondex.photo.log.LogActivity
+import com.bondex.photo.mq.MQManager
+import com.bondex.photo.service.MqService
 import com.bondex.ysl.camera.CameraActivity
+import com.bondex.ysl.camera.ISCameraConfig
 import com.bondex.ysl.camera.ISNav
+import com.bondex.ysl.databaselibrary.buinesslog.BusinessLogBean
 import com.google.zxing.integration.android.IntentIntegrator
 import com.qmuiteam.qmui.skin.QMUISkinManager
 import com.qmuiteam.qmui.util.QMUIDisplayHelper
 import com.qmuiteam.qmui.util.QMUIResHelper
+import com.qmuiteam.qmui.widget.dialog.QMUIDialog
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog.MenuDialogBuilder
+import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction
 import kotlinx.android.synthetic.main.activity_main.*
 
+
 class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
-    private final val IMG_REQUEST = 1001
+
+    private val IMG_REQUEST = 1001
     private val REQUEST_CAMERA_PERMISSION = 113
     private val REQUEST_SCAN_PERMISSIOn = 112
     private val REQUEST_CODE_SCAN = 114
     private var btnSize = 0;
+    private var mqBind: MQAidlInterface? = null
 
-    private fun initStatusBar() {
+    private var qrCodeDialog: QMUIDialog? = null
+    private val mCurrentDialogStyle = com.qmuiteam.qmui.R.style.QMUI_Dialog
 
-        StatusBarUtil.setColor(this@MainActivity, resources.getColor(R.color.colorPrimary))
-    }
+    private val mqServiceListener = object : MQAidlCallBack.Stub() {
 
-    /**
-     * 获取权限
-     */
-    private fun getPermissions(isScan: Boolean) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(
-                    this, Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) == PackageManager.PERMISSION_GRANTED && checkSelfPermission(
-                    this,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                ) == PackageManager.PERMISSION_GRANTED && checkSelfPermission(
-                    this,
-                    Manifest.permission.CAMERA
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                //具有权限
+        override fun sendMsg(mq: String?) {
 
-                if (isScan) {
-                    toScan()
-                } else {
-                    toCamera()
-                }
-            } else { //不具有获取权限，需要进行权限申请
-                ActivityCompat.requestPermissions(
-                    this, arrayOf(
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.CAMERA
-                    ), if (isScan) REQUEST_SCAN_PERMISSIOn else REQUEST_CAMERA_PERMISSION
-                )
-
-            }
-        } else {
-            if (isScan) {
-                toScan()
-            } else {
-                toCamera()
-            }
+            Log.i("aaa", "serviceMsg $mq")
         }
     }
 
 
-    fun toCamera(): Unit {
-        ISNav.getInstance().toCamera(this, null, IMG_REQUEST)
+    private val qrCodeObserver = Observer<Int> { t ->
+        when (t) {
 
+            viewModel.PARSE_FAIL -> {
 
-    }
+                ToastUtils.showToast("解码失败，当前二维码格式不对")
+            }
+            viewModel.PARSE_SUCCESS -> {
+                ToastUtils.showToast("解码成功")
+            }
 
-    fun toScan(): Unit {
-        //TODO 扫描
-        IntentIntegrator(this).setBeepEnabled(true).setRequestCode(REQUEST_CODE_SCAN)
-            .initiateScan()
+            viewModel.TAKE_PHOTO -> {
+                toCamera(true)
+            }
+            MQManager.START_SUCCESS -> {
 
-    }
-
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-
-        if (grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-
-            if (requestCode == REQUEST_CAMERA_PERMISSION) {
-                toCamera()
-            } else {
-                toScan()
+                content.show("", "MQ启动成功")
+            }
+            MQManager.START_FAIL -> {
+                content.show("mq启动失败", "请重启mq或者检查网络是否在内网中")
             }
         }
-
-
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == REQUEST_CODE_SCAN && resultCode == Activity.RESULT_OK) {
-
-            val result = IntentIntegrator.parseActivityResult(resultCode, data)
-            if (result.contents == null) {
-            } else {
-                ToastUtils.showToast(result.contents)
-//                toCamera()
-            }
-        } else if (requestCode == IMG_REQUEST && resultCode == Activity.RESULT_OK) {
-
-            val listImg = data?.getStringArrayListExtra(CameraActivity.FINISH_KEY)
-
-            ToastUtils.showToast("照片路径 " + (listImg?.get(0) ?: "未获取到照片"))
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceDisconnected(name: ComponentName?) {
+            Log.i("aaa", "serviceDisconnected")
         }
 
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+
+            mqBind = service as MQAidlInterface
+
+
+            Log.i("aaa", "serviceConnected")
+        }
     }
+
 
     override fun getBindingVariable(): Int {
 
@@ -142,10 +107,20 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
 
     override fun initView() {
 
-        initStatusBar()
-
         showLeft(false, 0)
-        showTile(true, "bondex-photo")
+        showTile(true, "拍照凭证工具")
+
+        showRight(true, R.string.camera, object : NoDoubleClickListener() {
+            override fun click(v: View?) {
+
+                if (viewModel.haveStart) {
+                    toCamera(false)
+                } else {
+                    ToastUtils.showToast("请先启动mq")
+                }
+
+            }
+        })
 
         btnSize = QMUIDisplayHelper.dp2px(this, 56)
 
@@ -158,12 +133,30 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
                 R.attr.app_skin_common_background
             )
         )
+        version.setText("版本:${CommonUtils.getVersionName(this)}")
+        main_out.setOnClickListener { finish() }
+        check_update.setOnClickListener{
 
+        }
+
+    }
+
+
+    override fun initListener() {
         img_btn.setOnClickListener { _ ->
 
-            val items = arrayOf("蓝色（默认）", "黑色", "白色")
             MenuDialogBuilder(this)
-                .addItems(items) { dialog, which ->
+                .addItems(viewModel.MENU_ITEMS) { dialog, which ->
+
+                    when (which) {
+
+                        0 -> viewModel.restartMq()
+                        1 -> showQrCodeDialog()
+                        2 -> isAutoTakePhoto(viewModel.autoTakePhoto())
+                        3 -> chooseCompressRatio()
+                        4 -> toLog(true)
+                        5 -> toLog(false)
+                    }
                     dialog.dismiss()
                 }
                 .setSkinManager(QMUISkinManager.defaultInstance(this))
@@ -171,12 +164,271 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
                 .show()
         }
         it_scan.setOnClickListener { _ -> toScan() }
+        registerObserver()
+    }
+
+    private fun toLog(isMq: Boolean) {
+
+        val intent = Intent(this, LogActivity::class.java)
+        intent.putExtra("log", isMq)
+        startActivity(intent)
+
+    }
+
+    private fun registerObserver() {
+
+        viewModel.qrCodeLiveData.observe(this, qrCodeObserver)
+    }
+
+
+    fun toCamera(isAuto: Boolean): Unit {
+
+        Log.i("aaa", "activity compressRation " + getRealCompressRatio())
+
+        val config = ISCameraConfig.Builder().setCompressRatio(getRealCompressRatio())
+            .setAutotake(if (isAuto) viewModel.autoTakePhoto() else false).build()
+
+        ISNav.getInstance().toCamera(this, config, IMG_REQUEST)
+
+    }
+
+    private fun toScan(): Unit {
+        //TODO 扫描
+        IntentIntegrator(this).setBeepEnabled(true).setRequestCode(REQUEST_CODE_SCAN)
+            .initiateScan()
+
+    }
+
+    private fun showQrCodeDialog() {
+
+        if (qrCodeDialog == null) {
+
+            val builder = QMUIDialog.MessageDialogBuilder(this)
+
+            builder?.let { it ->
+                it.setTitle("显示二维码")
+                    .setMessage(viewModel.getQrCode())
+                    .setSkinManager(QMUISkinManager.defaultInstance(this))
+                    .addAction("关闭", object : QMUIDialogAction.ActionListener {
+                        override fun onClick(dialog: QMUIDialog?, index: Int) {
+
+                            dialog?.dismiss()
+                        }
+                    })
+            }
+            qrCodeDialog = builder.create(mCurrentDialogStyle)
+            qrCodeDialog?.show()
+
+        } else {
+
+            if (qrCodeDialog?.isShowing!!) {
+
+                qrCodeDialog?.dismiss()
+            } else {
+                qrCodeDialog?.show()
+            }
+        }
+    }
+
+    private fun isAutoTakePhoto(autoTakePhoto: Boolean) {
+
+        val qmuiDailogBuilder = QMUIDialog.CheckBoxMessageDialogBuilder(this)
+
+
+        qmuiDailogBuilder.setTitle("当前是否自动拍照?")
+            .setMessage("自动拍照")
+            .setChecked(autoTakePhoto)
+            .addAction(
+                "取消"
+            ) { dialog, index -> dialog?.dismiss() }
+            .addAction("确定") { dialog, index ->
+
+                Log.i("aaa", "auto check " + qmuiDailogBuilder.isChecked)
+                viewModel.saveAutoTakePhoto(qmuiDailogBuilder.isChecked)
+                dialog.dismiss()
+            }
+            .create(mCurrentDialogStyle)
+            .show()
+    }
+
+    private fun showError() {
+
+        val append = StringBuffer()
+        val isSuccess: Boolean = viewModel.listUploadFaile.size == 0
+
+        val title = if (isSuccess) {
+            "上传成功"
+        } else {
+            "上传失败"
+        }
+
+        for (bean in viewModel.listUploadFaile) {
+
+            val fileTypeIndex: Int = bean.filePath.lastIndexOf("/")
+            val fileName = bean.filePath.substring(fileTypeIndex + 1)
+
+            append.append("$fileName - ${bean.content}\n")
+
+        }
+
+        val builder = QMUIDialog.MessageDialogBuilder(this)
+            .setTitle(title)
+            .setSkinManager(QMUISkinManager.defaultInstance(this))
+            .addAction("取消", object : QMUIDialogAction.ActionListener {
+                override fun onClick(dialog: QMUIDialog?, index: Int) {
+                    dialog?.dismiss()
+                }
+            })
+        if (!isSuccess) {
+            builder.setMessage(append.toString())
+            builder.addAction("重新上传", object : QMUIDialogAction.ActionListener {
+                override fun onClick(dialog: QMUIDialog?, index: Int) {
+                    dialog?.dismiss()
+
+                    viewModel.loading.postValue(true)
+                    val tmpList = mutableListOf<BusinessLogBean>()
+                    tmpList.addAll(viewModel.listUploadFaile)
+                    viewModel.clearUploadList()
+                    viewModel.uploadIterator(tmpList, false)
+                }
+            })
+        }
+        builder.create(mCurrentDialogStyle).show()
 
 
     }
 
+    private fun chooseCompressRatio() {
 
-    override fun initListener() {
+
+        QMUIDialog.CheckableDialogBuilder(this)
+            .setCheckedIndex(chooseCompressRaatioIndex())
+            .setSkinManager(QMUISkinManager.defaultInstance(this))
+            .addItems(viewModel.COMPRESS_RATIO_ITEMS) { dialog, which ->
+
+                Log.i("aaa", "chooseCompressRatio " + viewModel.COMPRESS_RATIO_ITEMS[which])
+                viewModel.saveCompressRatio(which)
+                dialog.dismiss()
+            }
+            .addAction("取消") { dialog, index ->
+                dialog.dismiss()
+            }
+            .create(mCurrentDialogStyle)
+            .show()
+
+    }
+
+//    private fun chooseCompressRatio() {
+//
+//
+//        QMUIDialog.CheckableDialogBuilder(this)
+//            .setCheckedIndex(chooseCompressRaatioIndex())
+//            .setSkinManager(QMUISkinManager.defaultInstance(this))
+//            .addItems(viewModel.COMPRESS_RATIO_ITEMS) { dialog, which ->
+//
+//                Log.i("aaa", "chooseCompressRatio " + viewModel.COMPRESS_RATIO_ITEMS[which])
+//                viewModel.saveCompressRatio(which)
+//                dialog.dismiss()
+//            }
+//            .addAction("取消") { dialog, index ->
+//                dialog.dismiss()
+//            }
+//            .create(mCurrentDialogStyle)
+//            .show()
+//
+//    }
+
+    private fun chooseCompressRaatioIndex(): Int {
+
+        var index = viewModel.compressRatio()
+
+        if (index == -1) {
+            return 0
+        }
+        return index
+    }
+
+    private fun getRealCompressRatio(): Int {
+
+        val which = chooseCompressRaatioIndex()
+
+        var compressRatio = 0
+        when (which) {
+            0 -> compressRatio = 70
+            1 -> compressRatio = 80
+            2 -> compressRatio = 95
+            3 -> compressRatio = 100
+        }
+        return compressRatio
+    }
+
+    private fun bindService() {
+
+        val intent = Intent(this, MqService::class.java)
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    private fun unbindService() {
+
+        unbindService(serviceConnection)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_CODE_SCAN && resultCode == Activity.RESULT_OK) {
+
+            val result = IntentIntegrator.parseActivityResult(resultCode, data)
+            if (result.contents == null) {
+            } else {
+                viewModel.parseQRCode(result.contents)
+
+            }
+        } else if (requestCode == IMG_REQUEST && resultCode == Activity.RESULT_OK) {
+
+            val listImg = data?.getStringArrayListExtra(CameraActivity.FINISH_KEY)
+
+
+
+            listImg?.let { it ->
+
+//                val filePath = it.get(0)
+
+                if (listImg.isEmpty()) {
+                    ToastUtils.showToast("请先拍照")
+                    return
+                }
+
+                viewModel.loading.postValue(true)
+                viewModel.clearUploadList()
+                viewModel.uploadImage(it)
+
+            }
+        }
+
+    }
+
+    override fun onStart() {
+        super.onStart()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if (viewModel.qrCodeLiveData.hasObservers()) {
+            viewModel.qrCodeLiveData.removeObserver(qrCodeObserver)
+        }
+//        unbindService()
+
+    }
+
+    override fun handleMsg(msg: String?) {
+
+        if (msg.equals("upload")) {
+            showError()
+        }
+
+
     }
 
 }

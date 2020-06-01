@@ -15,28 +15,37 @@ ext {
 
 
     dependencies = [
-            kottlin         : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version",
-            appcompat       : "androidx.appcompat:appcompat:$appcompat_version",
-            core_ktx        : "androidx.core:core-ktx:$core_ktx_version",
-            constraintlayout: "androidx.constraintlayout:constraintlayout:$constarintlayout_version",
+            kottlin          : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version",
+            appcompat        : "androidx.appcompat:appcompat:$appcompat_version",
+            core_ktx         : "androidx.core:core-ktx:$core_ktx_version",
+            constraintlayout : "androidx.constraintlayout:constraintlayout:$constarintlayout_version",
 
-            "okhttp"        : "com.squareup.okhttp3:okhttp:3.10.0",
-            "retrofit"      : "com.squareup.retrofit2:retrofit:2.4.0",
-            "convertergson" : "com.squareup.retrofit2:converter-gson:2.4.0",
+            "okhttp"         : "com.squareup.okhttp3:okhttp:3.10.0",
+            "retrofit"       : "com.squareup.retrofit2:retrofit:2.4.0",
+            "convertergson"  : "com.squareup.retrofit2:converter-gson:2.4.0",
             //   rxAndroid
-            rxAndroid       : 'io.reactivex.rxjava2:rxandroid:2.1.0',
-            rxjava          : 'io.reactivex.rxjava2:rxjava:2.x.x',
+            rxAndroid        : 'io.reactivex.rxjava2:rxandroid:2.1.0',
+            rxjava           : 'io.reactivex.rxjava2:rxjava:2.x.x',
             //   gosn
-            gson            : 'com.google.code.gson:gson:2.8.5',
+            gson             : 'com.google.code.gson:gson:2.8.5',
             // Room
-            room            : 'android.arch.persistence.room:runtime:1.0.0',
-            room_compiler   : "android.arch.persistence.room:compiler:1.0.0",
-            recyclerview    : "androidx.recyclerview:recyclerview:$recyclerview_viersion",
+            room             : 'android.arch.persistence.room:runtime:1.0.0',
+            room_compiler    : "android.arch.persistence.room:compiler:1.0.0",
+            recyclerview     : "androidx.recyclerview:recyclerview:$recyclerview_viersion",
             //   等待框
-            avi                : 'com.wang.avi:library:2.1.3',
+            avi              : 'com.wang.avi:library:2.1.3',
             //   logger 查询日志框架
-            logger             : 'com.orhanobut:logger:2.2.0',
-            llifecycle: 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+            logger           : 'com.orhanobut:logger:2.2.0',
+            llifecycle       : 'androidx.lifecycle:lifecycle-extensions:2.2.0',
+//            mq
+            mq               : 'com.rabbitmq:amqp-client:4.4.1',
+            coordinatorlayout: "androidx.coordinatorlayout:coordinatorlayout:1.1.0",
+            glide            : 'com.github.bumptech.glide:glide:4.11.0',
+            glide_compiler   : 'com.github.bumptech.glide:compiler:4.11.0',
+
+            imageLoader      : 'com.nostra13.universalimageloader:universal-image-loader:1.9.5',
+            supportdesign      : 'com.google.android.material:material:1.0.0',
+
 
 
     ]

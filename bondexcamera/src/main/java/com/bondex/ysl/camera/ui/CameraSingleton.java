@@ -7,12 +7,23 @@ import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.hardware.*;
 import android.os.Build;
+import android.os.Environment;
+import android.util.Log;
 import android.view.SurfaceHolder;
+
+import com.bondex.library.app.PhotoApplication;
+import com.bondex.ysl.camera.compross.Luban;
 import com.bondex.ysl.camera.ui.utils.AngleUtil;
 import com.bondex.ysl.camera.ui.utils.CameraParamUtil;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 相机的单例
@@ -47,6 +58,8 @@ public class CameraSingleton {
     private CameraSingleton() {
         findAvailableCameras();
         SELECTED_CAMERA = CAMERA_POST_POSITION;
+        saveExecutors = new ThreadPoolExecutor(3, 5, 3, TimeUnit.SECONDS, workQueue);
+
     }
 
     //获取实例
@@ -56,6 +69,9 @@ public class CameraSingleton {
         }
         return instance;
     }
+
+    private ThreadPoolExecutor saveExecutors;
+    private BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(2);
 
     /**
      * 获取角度
@@ -180,26 +196,44 @@ public class CameraSingleton {
                 mParams = mCamera.getParameters();
                 Camera.Size previewSize = CameraParamUtil.getInstance().getPreviewSize(mParams
                         .getSupportedPreviewSizes(), 1000, screenProp);
-                Camera.Size pictureSize = CameraParamUtil.getInstance().getPictureSize(mParams
-                        .getSupportedPictureSizes(), 1200, screenProp);
+//                Camera.Size pictureSize = CameraParamUtil.getInstance().getPictureSize(mParams
+//                        .getSupportedPictureSizes(), 1200, screenProp);
 
                 mParams.setPreviewSize(previewSize.width, previewSize.height);
 
-                preview_width = previewSize.width;
-                preview_height = previewSize.height;
+//                preview_width = previewSize.width;
+//                preview_height = previewSize.height;
+
+
+                //配置如下：
+                // 获取相机参数集
+                // 获取支持预览照片的尺寸
+//                List<Camera.Size> SupportedPreviewSizes =
+//                        mParams.getSupportedPreviewSizes();
+//                // 从List取出Size
+//                Camera.Size previewSize = SupportedPreviewSizes.get(0);
+//                mParams.setPreviewSize(previewSize.width, previewSize.height);
+                //  设置预览照片的大小
+                // 获取支持保存图片的尺寸
+                List<Camera.Size> supportedPictureSizes =
+                        mParams.getSupportedPictureSizes();
+                Camera.Size pictureSize = supportedPictureSizes.get(0);
 
                 mParams.setPictureSize(pictureSize.width, pictureSize.height);
+
+
                 mParams.setFlashMode(isFlash ? Camera.Parameters.FLASH_MODE_ON : Camera.Parameters.FLASH_MODE_OFF);
 
                 if (CameraParamUtil.getInstance().isSupportedFocusMode(mParams.getSupportedFocusModes(), Camera
                         .Parameters.FOCUS_MODE_AUTO)) {
-//                    mParams.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-                    //实现Camera自动对焦
+                    mParams.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
                     List<String> focusModes = mParams.getSupportedFocusModes();
                     if (focusModes != null) {
                         for (String mode : focusModes) {
                             mode.contains("continuous-video");
                             mParams.setFocusMode("continuous-video");
+
+                            Log.i("aaa","自动对焦");
                         }
                     }
                 }
@@ -264,7 +298,6 @@ public class CameraSingleton {
         final int nowAngle = (angle + 90) % 360;
 
         if (!isPreviewing) { //如果没有预览，就不能调用拍照功能;
-
             return;
         }
 
@@ -274,6 +307,12 @@ public class CameraSingleton {
             public void onPictureTaken(byte[] data, Camera camera) {
 
                 startPreView();
+                String path = PhotoApplication.getContext().getExternalFilesDir(Environment.DIRECTORY_DCIM) + File.separator + "img";
+                String fileName = System.currentTimeMillis() + ".png";
+                String file_path = path + File.separator + fileName;
+
+                savePri(data, path, fileName);
+
 
                 Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
                 Matrix matrix = new Matrix();
@@ -285,13 +324,49 @@ public class CameraSingleton {
                 }
                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                 if (callback != null) {
-                    callback.captureResult(bitmap);
+                    callback.captureResult(bitmap, file_path);
 
                 }
             }
 
 
         });
+    }
+
+    private void savePri(final byte[] bytes, final String path, final String fileName) {
+
+
+        saveExecutors.execute(new Runnable() {
+            @Override
+            public void run() {
+
+                try {
+
+                    File file = new File(path);
+
+                    if (!file.exists()) {
+                        file.mkdirs();
+                    }
+
+                    String file_path = path + File.separator + fileName;
+                    file = new File(file_path);
+
+                    FileOutputStream fos = new FileOutputStream(file);
+                    fos.write(bytes, 0, bytes.length);
+                    fos.flush();
+                    fos.close();
+
+                    Luban.with(PhotoApplication.getContext()).ignoreBy(100).setTargetDir(file_path).setCompressRatio(100).load(file).get();
+
+                    Log.i("aaa", "照片路径 " + file.getAbsolutePath()+"  "+file.exists());
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
     }
 
     /**
@@ -349,6 +424,6 @@ public class CameraSingleton {
      * 拍照回调的接口
      */
     public interface TakePictureCallback {
-        void captureResult(Bitmap bitmap);
+        void captureResult(Bitmap bitmap, String filePath);
     }
 }
