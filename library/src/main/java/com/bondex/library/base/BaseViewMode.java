@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModel;
  * @Author: ysl
  * description:
  */
-public abstract class BaseViewMode extends ViewModel implements LifecycleaWacher {
+public abstract class BaseViewMode<T extends BaseModel> extends ViewModel implements LifecycleaWacher {
 
     public MutableLiveData<Boolean> loading = new MutableLiveData<>();
 
@@ -19,10 +19,14 @@ public abstract class BaseViewMode extends ViewModel implements LifecycleaWacher
     protected MutableLiveData<String> msgLiveData = new MutableLiveData<>();
 
     protected Context context;
+    protected T model;
 
     protected void setContext(Context context) {
         this.context = context;
+        setMyModel();
     }
+    protected  abstract void setMyModel();
+
 
 
 }

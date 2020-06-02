@@ -9,6 +9,7 @@ import android.os.IBinder
 import android.util.Log
 import android.view.View
 import androidx.lifecycle.Observer
+import com.bondex.library.app.AppManager
 import com.bondex.library.base.BaseActivity
 import com.bondex.library.util.CommonUtils
 import com.bondex.library.util.NoDoubleClickListener
@@ -134,9 +135,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
             )
         )
         version.setText("版本:${CommonUtils.getVersionName(this)}")
-        main_out.setOnClickListener { finish() }
-        check_update.setOnClickListener{
-
+        main_out.setOnClickListener { exit() }
+        check_update.setOnClickListener {
+            viewModel.cheVersion()
         }
 
     }
@@ -154,8 +155,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
                         1 -> showQrCodeDialog()
                         2 -> isAutoTakePhoto(viewModel.autoTakePhoto())
                         3 -> chooseCompressRatio()
-                        4 -> toLog(true)
-                        5 -> toLog(false)
+                        4 -> chooseTakeDelay()
+                        5 -> toLog(true)
+                        6 -> toLog(false)
                     }
                     dialog.dismiss()
                 }
@@ -175,6 +177,12 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
 
     }
 
+    protected fun exit() {
+
+        AppManager.getInstance().finishAllActivity()
+        finish()
+    }
+
     private fun registerObserver() {
 
         viewModel.qrCodeLiveData.observe(this, qrCodeObserver)
@@ -185,7 +193,10 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
 
         Log.i("aaa", "activity compressRation " + getRealCompressRatio())
 
+        val takeDelay =
+            if (viewModel.getTakeDelay() == 0) 0 else viewModel.TAKE_DELAY_ITEMS[viewModel.getTakeDelay()].toInt()
         val config = ISCameraConfig.Builder().setCompressRatio(getRealCompressRatio())
+            .setTakeDelay(takeDelay)
             .setAutotake(if (isAuto) viewModel.autoTakePhoto() else false).build()
 
         ISNav.getInstance().toCamera(this, config, IMG_REQUEST)
@@ -318,25 +329,25 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
 
     }
 
-//    private fun chooseCompressRatio() {
-//
-//
-//        QMUIDialog.CheckableDialogBuilder(this)
-//            .setCheckedIndex(chooseCompressRaatioIndex())
-//            .setSkinManager(QMUISkinManager.defaultInstance(this))
-//            .addItems(viewModel.COMPRESS_RATIO_ITEMS) { dialog, which ->
-//
-//                Log.i("aaa", "chooseCompressRatio " + viewModel.COMPRESS_RATIO_ITEMS[which])
-//                viewModel.saveCompressRatio(which)
-//                dialog.dismiss()
-//            }
-//            .addAction("取消") { dialog, index ->
-//                dialog.dismiss()
-//            }
-//            .create(mCurrentDialogStyle)
-//            .show()
-//
-//    }
+    private fun chooseTakeDelay() {
+
+
+        QMUIDialog.CheckableDialogBuilder(this)
+            .setCheckedIndex(viewModel.getTakeDelay())
+            .setSkinManager(QMUISkinManager.defaultInstance(this))
+            .addItems(viewModel.TAKE_DELAY_ITEMS) { dialog, which ->
+
+                Log.i("aaa", "chooseCompressRatio " + viewModel.TAKE_DELAY_ITEMS[which])
+                viewModel.saveTakeDelay(which)
+                dialog.dismiss()
+            }
+            .addAction("取消") { dialog, index ->
+                dialog.dismiss()
+            }
+            .create(mCurrentDialogStyle)
+            .show()
+
+    }
 
     private fun chooseCompressRaatioIndex(): Int {
 
@@ -424,10 +435,13 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
 
     override fun handleMsg(msg: String?) {
 
-        if (msg.equals("upload")) {
-            showError()
-        }
+        when (msg) {
+            "update" -> viewModel.showUpdateDialog(this)
 
+            "upload" -> showError()
+
+
+        }
 
     }
 

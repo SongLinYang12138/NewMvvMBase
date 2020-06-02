@@ -27,7 +27,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".test.TestActivity" />
-        <activity android:name=".main.MainActivity"></activity>
+        <activity android:name=".main.MainActivity"
+            ></activity>
 
         <service android:name=".service.MqService" />
     </application>

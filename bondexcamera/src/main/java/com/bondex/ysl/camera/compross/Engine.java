@@ -84,11 +84,11 @@ class Engine {
 
             if (Checker.SINGLE.isJPG(srcImg.open())) {
                 tagBitmap = rotatingImage(tagBitmap, Checker.SINGLE.getOrientation(srcImg.open()));
-            } else {
-//                相机直接拍照保存下来的图片需要旋转90.
-                tagBitmap = rotatingImage(tagBitmap, 90);
-
             }
+
+//                相机直接拍照保存下来的图片需要旋转90.
+            tagBitmap = rotatingImage(tagBitmap, 90);
+
 
             Log.i("aaa", "camerssRatio " + compressRatio);
             tagBitmap.compress(focusAlpha ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, compressRatio, stream);

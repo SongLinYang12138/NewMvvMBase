@@ -11,20 +11,23 @@ import java.util.ArrayList;
  * Author: ysl
  * description:
  */
-public class ISCameraConfig implements Parcelable {
+public class ISCameraConfig implements Parcelable{
 
     public int compressRatio;
     public boolean isAutoTak;
+    public int takeDelay;
 
 
     public ISCameraConfig(Builder builder) {
         this.compressRatio = builder.compressRatio;
         this.isAutoTak = builder.isAutoTak;
+        this.takeDelay = builder.takeDelay;
     }
 
     protected ISCameraConfig(Parcel in) {
         compressRatio = in.readInt();
         isAutoTak = in.readByte() != 0;
+        takeDelay = in.readInt();
     }
 
     public static final Creator<ISCameraConfig> CREATOR = new Creator<ISCameraConfig>() {
@@ -48,17 +51,20 @@ public class ISCameraConfig implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(compressRatio);
         dest.writeByte((byte) (isAutoTak ? 1 : 0));
+        dest.writeInt(takeDelay);
     }
 
 
     public static class Builder implements Parcelable {
         private int compressRatio;
-        public boolean isAutoTak;
+        private boolean isAutoTak;
+        private int takeDelay;
 
 
         protected Builder(Parcel in) {
             compressRatio = in.readInt();
             isAutoTak = in.readByte() != 0;
+            takeDelay = in.readInt();
         }
 
         public static final Creator<Builder> CREATOR = new Creator<Builder>() {
@@ -72,6 +78,11 @@ public class ISCameraConfig implements Parcelable {
                 return new Builder[size];
             }
         };
+
+        public Builder setTakeDelay(int takeDelay) {
+            this.takeDelay = takeDelay;
+            return this;
+        }
 
         public Builder setCompressRatio(int compressRatio) {
             this.compressRatio = compressRatio;
@@ -103,6 +114,7 @@ public class ISCameraConfig implements Parcelable {
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeInt(compressRatio);
             dest.writeByte((byte) (isAutoTak ? 1 : 0));
+            dest.writeInt(takeDelay);
         }
     }
 }

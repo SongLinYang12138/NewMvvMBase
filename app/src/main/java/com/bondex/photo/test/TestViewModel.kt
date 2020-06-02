@@ -4,6 +4,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.databinding.ObservableField
 import com.bondex.library.app.PhotoApplication
+import com.bondex.library.base.BaseModel
 import com.bondex.library.base.BaseViewMode
 
 
@@ -12,7 +13,7 @@ import com.bondex.library.base.BaseViewMode
  * @Author: ysl
  * description:
  */
-class TestViewModel : BaseViewMode() {
+class TestViewModel : BaseViewMode<TestModel>() {
     val tv = ObservableField<String>()
 
 
@@ -46,5 +47,9 @@ class TestViewModel : BaseViewMode() {
     }
 
     override fun onDestroy() {
+    }
+
+    override fun setMyModel() {
+
     }
 }

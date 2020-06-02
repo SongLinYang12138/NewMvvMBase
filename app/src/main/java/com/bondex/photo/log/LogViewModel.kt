@@ -31,7 +31,7 @@ import io.reactivex.schedulers.Schedulers
  * @Author: ysl
  * description:
  */
-class LogViewModel : BaseViewMode() {
+class LogViewModel : BaseViewMode<LogModel>(), LogCallBack {
     //    判断当前显示的是MQ日志还是BUSINESS日志
     var isMq = true
 
@@ -278,4 +278,10 @@ class LogViewModel : BaseViewMode() {
 
     override fun onDestroy() {
     }
+
+    override fun setMyModel() {
+
+        model = LogModel(this)
+    }
+
 }

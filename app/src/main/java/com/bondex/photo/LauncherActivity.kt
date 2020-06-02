@@ -70,5 +70,6 @@ class LauncherActivity : AppCompatActivity() {
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
         overridePendingTransition(R.anim.window_in,R.anim.window_out)
+        finish()
     }
 }

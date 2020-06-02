@@ -68,7 +68,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private static final int REQUEST_PERMISSION = 113;
     private CameraView cameraView;
     private boolean granted = false;
-    private int cameraRatio;
     private ISCameraConfig config;
 
     private ImageView iv_picture;
@@ -82,30 +81,19 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
 
     public static final String FINISH_KEY = "result";
+    private static final int TAKE_PHOTO = 0;
+    private static final int FINISH = 1;
+
     private ImageView ivTakePituer, ivCancel, ivBack, ivAuto, ivRotation;
 
     private RelativeLayout rlTakStatus, rlTakePhoto, rlTakePictureBottom;
     private LinearLayout llChoosePicture;
     private TextView tvCancel, tvFinish;
-    private boolean canFinish = false;
     private String curentFilePath;
 
 
-    Handler finishHandler = new Handler() {
-
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            super.handleMessage(msg);
-
-            if (config != null && config.isAutoTak) {
-
-                onFinish();
-            }
-            ivImg.setClickable(true);
-
-        }
-    };
-
+    private boolean startTak = false;
+    private int delayTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,6 +145,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
 
         config = getIntent().getParcelableExtra(LIST_KEY);
+
+        delayTime = config.takeDelay * 1000;
+
     }
 
     private void initStatusBar() {
@@ -182,33 +173,75 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         super.onStart();
 
         if (config.isAutoTak) {
-            autoTake();
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+
+                    autoTake();
+                }
+            }, 2000);
+
         }
     }
 
-    public void autoTake() {
 
-        boolean take = new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                takePicture();
-                atuoSave();
-            }
-        }, 2000);
+    private void autoTake() {
 
-    }
 
-    public void atuoSave() {
-
-        boolean save = new Handler().postDelayed(new Runnable() {
+        final Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
 
-                savePicture();
+                if (config.takeDelay > 0) {
+
+
+                    for (int i = 0; i < 3; ++i) {
+
+
+                        takeHandle.sendEmptyMessage(TAKE_PHOTO);
+                        startTak = false;
+
+                        try {
+
+//                            while (!startTak) {
+//                                Log.i("aaa", "循环检查" + startTak);
+//                                Thread.sleep(500);
+//                            }
+
+                            if (i == 2 && config.isAutoTak) {
+//         等待2s，用于保存照片
+                                Thread.sleep(3000);
+                                takeHandle.sendEmptyMessage(FINISH);
+                            }
+                            Thread.sleep(delayTime);
+
+
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+                } else {
+
+                    try {
+                        Thread.sleep(2000);
+                        takeHandle.sendEmptyMessage(TAKE_PHOTO);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
             }
-        }, 2000);
+        });
+        thread.setDaemon(true);
+        thread.start();
+
 
     }
+
 
     @Override
     protected void onPause() {
@@ -222,7 +255,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         super.onDestroy();
         CameraSingleton.getInstance().doDestroyCamera();
         Log.i("JCameraView", "onDestroy");
-
+        startTak = false;
 
     }
 
@@ -280,8 +313,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 //镜头切换
         if (i == R.id.takepicture) {
 
-            playAutdio();
-            takePicture();
+            if (config.takeDelay > 0) {
+                autoTake();
+            } else {
+                takePicture();
+
+            }
+
         } else if (i == R.id.tv_cancel_take_pic) {
 
             cancel();
@@ -336,11 +374,12 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      * 拍照
      */
     private void takePicture() {
-        Log.i("aaa", "拍照");
-        /**
-         * 执行拍照 并且将拍照按钮设置不可点击
-         */
+
+        playAutdio();
+//      执行拍照 并且将拍照按钮设置不可点击
         ivTakePituer.setClickable(false);
+
+
         CameraSingleton.getInstance().takePicture(new CameraSingleton.TakePictureCallback() {
             @Override
             public void captureResult(Bitmap bitmap, String filePath) {
@@ -349,6 +388,11 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 iv_picture.setImageBitmap(bitmap);
                 //设置显示  是否确认的布局
                 setLayoutStatus(true);
+
+                if (config.isAutoTak || config.takeDelay > 0) {
+                    savePicture();
+                }
+
 
             }
         });
@@ -359,15 +403,30 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      */
     private void savePicture() {
 
-        if(CommonUtils.isEmpty(curentFilePath)){
+        if (CommonUtils.isEmpty(curentFilePath)) {
             ToastUtils.showToast("请先拍照");
             return;
         }
+
+        if(config.takeDelay > 0){
+
+            boolean autoCancel = new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    setLayoutStatus(false);
+                    startTak = true;
+                }
+            }, 1500);
+        }
         ivImg.setClickable(false);
         ToastUtils.showToast("正在保存");
-
         takeImgs.add(curentFilePath);
-        finishHandler.sendEmptyMessage(1);
+
+        if (config.isAutoTak && config.takeDelay == 0) {
+            onFinish();
+        }
+        ivImg.setClickable(true);
+
 
         //        拍完后直接保存返回
 //        setLayoutStatus(false);
@@ -446,6 +505,21 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     }
 
 
+    private Handler takeHandle = new Handler() {
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+
+            if (msg.what == TAKE_PHOTO) {
+                takePicture();
+            } else if (msg.what == FINISH) {
+                onFinish();
+            }
+
+
+        }
+    };
 
     /*
      * 取消或返回时，删除以保存的照片信息
