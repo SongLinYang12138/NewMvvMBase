@@ -51,6 +51,7 @@ public class CameraSingleton {
     private boolean isPreviewing = false;//是否在预览
     private static CameraSingleton instance;//单例
     private boolean isOpenflash;
+    private CameraPrivewCallBack privewCallBack = null;
 
 
     private int SELECTED_CAMERA = -1;
@@ -79,6 +80,8 @@ public class CameraSingleton {
         SELECTED_CAMERA = CAMERA_POST_POSITION;
         saveExecutors = new ThreadPoolExecutor(3, 5, 3, TimeUnit.SECONDS, workQueue);
 
+        privewCallBack = new CameraPrivewCallBack();
+        mCamera.setOneShotPreviewCallback(privewCallBack);
     }
 
     //获取实例
@@ -355,6 +358,7 @@ public class CameraSingleton {
         });
     }
 
+
     private void savePircture(final byte[] bytes, final String path, final String fileName) {
 
 
@@ -481,5 +485,12 @@ public class CameraSingleton {
      */
     public interface TakePictureCallback {
         void captureResult(Bitmap bitmap, String filePath, String fileName);
+    }
+
+    private class CameraPrivewCallBack implements Camera.PreviewCallback {
+        @Override
+        public void onPreviewFrame(byte[] data, Camera camera) {
+            Log.i("aaa", "onPreview " + data.length);
+        }
     }
 }
