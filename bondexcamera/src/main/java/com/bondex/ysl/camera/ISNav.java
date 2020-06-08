@@ -37,7 +37,6 @@ public class ISNav {
 
     public void toCamera(Object source, ISCameraConfig config, int requestCode) {
 
-        Log.i("aaa", "super" + source.getClass().getSuperclass());
 
         if (source instanceof Activity) {
 

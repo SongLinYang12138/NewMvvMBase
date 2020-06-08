@@ -81,7 +81,8 @@ class BusinessLogAdapter : RecyclerView.Adapter<BusinessLogAdapter.ViewHolder>()
         }
 
         holder.tv?.setTag(position)
-        holder.tv?.setText("${Tools.getDateAndTime(bean.create_time) + "　　" + bean.content + "　　" + bean.filePath}")
+        holder.tv?.setText(Tools.getDateAndTime(bean.create_time)
+                + "　　" + bean.content +if(CommonUtils.isNotEmpty(bean.qrcode))"　　"+bean.qrcode+ "　　"+ bean.filePath else "" + "　　" + bean.filePath)
 
     }
 

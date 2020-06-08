@@ -9,8 +9,9 @@
 
     <application
         android:name="com.bondex.library.app.PhotoApplication"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
+        android:requestLegacyExternalStorage = "true"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"

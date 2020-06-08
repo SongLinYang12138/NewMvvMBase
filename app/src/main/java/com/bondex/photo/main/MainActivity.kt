@@ -18,6 +18,7 @@ import com.bondex.photo.BR
 import com.bondex.photo.MQAidlCallBack
 import com.bondex.photo.MQAidlInterface
 import com.bondex.photo.R
+import com.bondex.ysl.camera.bean.ImgBean
 import com.bondex.photo.databinding.ActivityMainBinding
 import com.bondex.photo.log.LogActivity
 import com.bondex.photo.mq.MQManager
@@ -34,6 +35,7 @@ import com.qmuiteam.qmui.widget.dialog.QMUIDialog
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog.MenuDialogBuilder
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.ArrayList
 
 
 class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
@@ -52,7 +54,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
 
         override fun sendMsg(mq: String?) {
 
-            Log.i("aaa", "serviceMsg $mq")
         }
     }
 
@@ -119,7 +120,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
                 } else {
                     ToastUtils.showToast("请先启动mq")
                 }
-
             }
         })
 
@@ -397,7 +397,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
             }
         } else if (requestCode == IMG_REQUEST && resultCode == Activity.RESULT_OK) {
 
-            val listImg = data?.getStringArrayListExtra(CameraActivity.FINISH_KEY)
+            val listImg: ArrayList<ImgBean>? =
+                data?.getParcelableArrayListExtra(CameraActivity.FINISH_KEY)
 
 
 
@@ -409,15 +410,15 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
                     ToastUtils.showToast("请先拍照")
                     return
                 }
-
-                viewModel.loading.postValue(true)
                 viewModel.clearUploadList()
-                viewModel.uploadImage(it)
+                viewModel.uploadImage(listImg)
+
 
             }
         }
 
     }
+
 
     override fun onStart() {
         super.onStart()

@@ -201,11 +201,20 @@ class LogViewModel : BaseViewMode<LogModel>(), LogCallBack {
         }
 
 
-        NetWorkUtils.upload(upload_url, bean.filePath, object : UploadCallBack {
+        NetWorkUtils.upload(upload_url, bean.filePath, "",object : UploadCallBack {
             override fun uploadError(error: String, file_path: String) {
 
-                bean.content = error
-                bean.status = 1
+                if(error.contains("当文件已存在时")){
+
+                    bean.status = 0
+                    bean.content = "提交成功"
+
+                }else{
+
+                    bean.status = 1
+                    bean.content = error
+                }
+
                 listUploadFaile.add(bean)
 
                 list.removeAt(0)

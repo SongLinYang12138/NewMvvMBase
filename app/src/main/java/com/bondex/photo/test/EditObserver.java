@@ -27,7 +27,6 @@ public class EditObserver extends BaseObservable {
     public void setEt(String et) {
 
         this.et = et;
-        Log.i("aaa", "et  " + et);
         notifyPropertyChanged(BR.et);
     }
 
@@ -37,7 +36,6 @@ public class EditObserver extends BaseObservable {
 
     public void setCheck(boolean check) {
         this.check = check;
-        Log.i("aaa", "check"+check);
         notifyPropertyChanged(BR.check);
     }
 }

@@ -5,17 +5,16 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.*;
 
@@ -25,19 +24,26 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.bondex.library.util.CommonUtils;
 import com.bondex.library.util.StatusBarUtil;
 import com.bondex.library.util.ToastUtils;
-import com.bondex.ysl.camera.compross.Luban;
+import com.bondex.ysl.camera.bean.BitmapBean;
+import com.bondex.ysl.camera.bean.ImgBean;
 import com.bondex.ysl.camera.ui.CameraSingleton;
 import com.bondex.ysl.camera.ui.CameraView;
+import com.bondex.ysl.camera.ui.utils.DecodeBitmapCallback;
+import com.google.zxing.Result;
+import com.bondex.ysl.camera.ui.DecodeBitmapThread;
+import com.journeyapps.barcodescanner.CaptureManager;
+import com.journeyapps.barcodescanner.DecoratedBarcodeView;
+import com.orhanobut.logger.Logger;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * date: 2019/7/17
@@ -77,7 +83,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     /**
      * 拍照的图片的数量
      */
-    private ArrayList<String> takeImgs = new ArrayList<>();
+    private ArrayList<ImgBean> takeImgs = new ArrayList<>();
 
 
     public static final String FINISH_KEY = "result";
@@ -89,7 +95,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private RelativeLayout rlTakStatus, rlTakePhoto, rlTakePictureBottom;
     private LinearLayout llChoosePicture;
     private TextView tvCancel, tvFinish;
-    private String curentFilePath;
+    private BitmapBean curentBitmap;
 
 
     private boolean startTak = false;
@@ -148,6 +154,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
         delayTime = config.takeDelay * 1000;
 
+        CameraSingleton.getInstance().setResultHandler(parseCodeHandler);
+
     }
 
     private void initStatusBar() {
@@ -167,6 +175,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             }
         }
     }
+
 
     @Override
     protected void onStart() {
@@ -256,8 +265,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         CameraSingleton.getInstance().doDestroyCamera();
         Log.i("JCameraView", "onDestroy");
         startTak = false;
-
     }
+
 
     private void playAutdio() {
 
@@ -293,7 +302,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             }
         }
     }
-
 
     /**
      * 拍照的点击事件
@@ -382,9 +390,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
         CameraSingleton.getInstance().takePicture(new CameraSingleton.TakePictureCallback() {
             @Override
-            public void captureResult(Bitmap bitmap, String filePath) {
+            public void captureResult(Bitmap bitmap, String filePath, String fileName) {
 
-                curentFilePath = filePath;
+                curentBitmap = new BitmapBean(filePath, 0, fileName, "");
+
                 iv_picture.setImageBitmap(bitmap);
                 //设置显示  是否确认的布局
                 setLayoutStatus(true);
@@ -403,12 +412,12 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      */
     private void savePicture() {
 
-        if (CommonUtils.isEmpty(curentFilePath)) {
+        if (curentBitmap == null) {
             ToastUtils.showToast("请先拍照");
             return;
         }
 
-        if(config.takeDelay > 0){
+        if (config.takeDelay > 0) {
 
             boolean autoCancel = new Handler().postDelayed(new Runnable() {
                 @Override
@@ -420,13 +429,21 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
         ivImg.setClickable(false);
         ToastUtils.showToast("正在保存");
-        takeImgs.add(curentFilePath);
+
+        ImgBean imgBean = new ImgBean(curentBitmap.getPath(), curentBitmap.getQrCode(), curentBitmap.getFileName(), 0);
+
+        if (takeImgs.contains(imgBean)) {
+
+            int index = takeImgs.indexOf(imgBean);
+            takeImgs.set(index, imgBean);
+        } else {
+            takeImgs.add(imgBean);
+        }
 
         if (config.isAutoTak && config.takeDelay == 0) {
             onFinish();
         }
         ivImg.setClickable(true);
-
 
         //        拍完后直接保存返回
 //        setLayoutStatus(false);
@@ -453,9 +470,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         //surfaceview
         cameraView.setVisibility(isShowConfirmPhtoGraph ? View.GONE : View.VISIBLE);
 
-        if (!isShowConfirmPhtoGraph) {
-            CameraSingleton.getInstance().autoCameraFocus();
-        }
+//        if (!isShowConfirmPhtoGraph) {
+//            CameraSingleton.getInstance().autoCameraFocus();
+//        }
 
         //图片的预览
         iv_picture.setVisibility(isShowConfirmPhtoGraph ? View.VISIBLE : View.GONE);
@@ -469,7 +486,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
         Intent intent = new Intent();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
-            intent.putStringArrayListExtra(FINISH_KEY, takeImgs);
+            intent.putParcelableArrayListExtra(FINISH_KEY, takeImgs);
+
         }
         setResult(RESULT_OK, intent);
         finish();
@@ -488,8 +506,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     private void delete() {
 
-        if (CommonUtils.isNotEmpty(curentFilePath)) {
-            File file = new File(curentFilePath);
+        if (curentBitmap != null) {
+            File file = new File(curentBitmap.getPath());
             if (file.exists()) {
                 file.delete();
             }
@@ -520,6 +538,34 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
         }
     };
+    private Handler parseCodeHandler = new Handler() {
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+
+            if (msg.what == 101) {
+
+                JSONObject ob = (JSONObject) msg.obj;
+
+                try {
+                    String fileName = ob.getString("fileName");
+                    String qrcode = ob.getString("qrCode");
+
+                    if (curentBitmap != null && curentBitmap.getFileName().equals(fileName)) {
+                        curentBitmap.setQrCode(qrcode);
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+
+
+        }
+    };
 
     /*
      * 取消或返回时，删除以保存的照片信息
@@ -531,7 +577,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             try {
 
                 for (int i = 0; i < takeImgs.size(); ++i) {
-                    File file = new File(takeImgs.get(i).toString());
+                    File file = new File(takeImgs.get(i).getPath());
                     file.delete();
                 }
             } catch (Exception e) {

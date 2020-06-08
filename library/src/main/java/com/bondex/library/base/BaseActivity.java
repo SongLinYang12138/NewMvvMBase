@@ -52,7 +52,6 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
         public void onChanged(Boolean isShow) {
 
             if (loading != null) {
-                Log.i("aaa", " showload" + isShow);
                 loading.setVisibility(isShow ? View.VISIBLE : View.GONE);
             }
 
@@ -63,7 +62,6 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
         @Override
         public void onChanged(String s) {
 
-            Log.i("aaa", " toastObserver  " + s);
             showDialog(s);
         }
     };

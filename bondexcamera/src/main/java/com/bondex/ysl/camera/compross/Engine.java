@@ -90,7 +90,6 @@ class Engine {
             tagBitmap = rotatingImage(tagBitmap, 90);
 
 
-            Log.i("aaa", "camerssRatio " + compressRatio);
             tagBitmap.compress(focusAlpha ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, compressRatio, stream);
             tagBitmap.recycle();
 

@@ -22,10 +22,8 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-
 import com.google.zxing.client.android.Intents;
 import com.journeyapps.barcodescanner.CaptureActivity;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,8 +41,8 @@ import java.util.Map;
  */
 @SuppressWarnings("unused")
 public class IntentIntegrator {
-
-    public static final int REQUEST_CODE = 0x0000c0de; // Only use bottom 16 bits
+    // Only use bottom 16 bits
+    public static final int REQUEST_CODE = 0x0000c0de;
 
     private static final String TAG = IntentIntegrator.class.getSimpleName();
 

@@ -26,6 +26,7 @@ import com.bondex.library.util.CommonUtils
 import com.bondex.library.util.SharedPreferenceUtils
 import com.bondex.library.util.ToastUtils
 import com.bondex.photo.R
+import com.bondex.ysl.camera.bean.ImgBean
 import com.bondex.photo.bean.QRCodeBean
 import com.bondex.photo.mq.MQCheckWork
 import com.bondex.photo.mq.MQManager
@@ -44,6 +45,9 @@ import com.bondex.ysl.installlibrary.InstallApk
 import com.bondex.ysl.installlibrary.download.DownloadListener
 import com.bondex.ysl.installlibrary.download.UpdateBean
 import com.google.gson.Gson
+import com.google.zxing.Result
+import com.journeyapps.barcodescanner.utils.DecodeImgThread
+import com.journeyapps.barcodescanner.inter.DecodeImgCallback
 import com.orhanobut.logger.Logger
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
@@ -54,6 +58,7 @@ import io.reactivex.schedulers.Schedulers
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
+import java.lang.Exception
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -65,7 +70,7 @@ import java.util.concurrent.TimeUnit
 class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener {
 
     val MENU_ITEMS =
-        arrayOf("重启mq", "显示二维码", "是否自动拍照", "压缩比率", "连拍设置","查看MQ日志", "查看上传日志")
+        arrayOf("重启mq", "显示二维码", "是否自动拍照", "压缩比率", "连拍设置", "查看MQ日志", "查看上传日志")
 
     val COMPRESS_RATIO_ITEMS = arrayOf("60%", "75%", "85%", "90%")
     val TAKE_DELAY_ITEMS = arrayOf("不连拍", "3", "5", "10")
@@ -89,7 +94,6 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
 
     val listUploadFaile: MutableList<BusinessLogBean> = mutableListOf()
     val listUploadSuccess: MutableList<BusinessLogBean> = mutableListOf()
-
 
     var mqLogBean: MQLogBean? = null
 
@@ -149,23 +153,23 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
 
         val gson = Gson()
 
-        val qrCode = gson.fromJson(qrStr, QRCodeBean::class.java)
-
-        if (qrCode == null) {
-            qrCodeLiveData.postValue(PARSE_FAIL)
-        } else {
-            upload_url = "${qrCode.serviceIpAddress}:${qrCode.serviceIpPort}"
+        try {
+            val qrCode: QRCodeBean? = gson.fromJson(qrStr, QRCodeBean::class.java)
+            upload_url = "${qrCode?.serviceIpAddress}:${qrCode?.serviceIpPort}"
 
             if (!upload_url?.contains("http://")!!) {
                 upload_url = "http://${upload_url}"
             }
 
-            startMq(qrCode.clientMQGuid)
+            qrCode?.clientMQGuid?.let { startMq(it) }
             Log.i("aaa", "qrcode url $upload_url")
             qrCodeLiveData.postValue(PARSE_SUCCESS)
             mqSharedPreferences?.saveStr(Constant.SAVE_MQ_KEY, qrStr)
+        } catch (e: Exception) {
+            qrCodeLiveData.postValue(PARSE_FAIL)
 
         }
+
     }
 
     private fun startCheck() {
@@ -201,12 +205,12 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
 
         val clientMqGuid = setUpload_url()
 
-        if (CommonUtils.isNotEmpty(clientMqGuid)) {
+//        if (CommonUtils.isNotEmpty(clientMqGuid)) {
 
-            clientMqGuid?.let { it -> startMq(it) }
-        } else {
-            ToastUtils.showToast("未获取到clientMqGuid重启失败")
-        }
+        clientMqGuid?.let { it -> startMq(it) }
+//        } else {
+//            ToastUtils.showToast("未获取到clientMqGuid重启失败")
+//        }
 
     }
 
@@ -245,7 +249,7 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
         return compressRatio
     }
 
-    fun uploadImage(list: MutableList<String>) {
+    fun uploadImage(list: MutableList<ImgBean>) {
 
 
         if (list.isEmpty()) {
@@ -259,9 +263,10 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
         var seqNo = mqLogBean?.seqNo
 
         if (seqNo == null) seqNo = System.currentTimeMillis().toString()
-        val filePath = list.get(0)
+        val filePath = list.get(0).path
+        val qrcode = list.get(0).qrCode
 
-        NetWorkUtils.upload(upload_url, filePath, object : UploadCallBack {
+        NetWorkUtils.upload(upload_url, filePath, qrcode, object : UploadCallBack {
             override fun uploadError(error: String, file_path: String) {
 
 
@@ -269,11 +274,20 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
 
                 bean.seqno = seqNo
                 bean.filePath = filePath
-                bean.status = 1
-                bean.content = error
+                bean.qrcode = qrcode
+                if(error.contains("当文件已存在时")){
+
+                    bean.status = 0
+                    bean.content = "提交成功"
+
+                }else{
+
+                    bean.status = 1
+                    bean.content = error
+                }
+
 
                 listUploadFaile.add(bean)
-
                 list.removeAt(0)
                 uploadImage(list)
             }
@@ -287,6 +301,7 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
                 bean.filePath = filePath
                 bean.status = 0
                 bean.content = "提交成功"
+                bean.qrcode = qrcode
 
                 listUploadSuccess.add(bean)
 
@@ -390,7 +405,6 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
                 val dao = BusinessLogDataBase.getInstance(context).dao
 
                 val list: MutableList<BusinessLogBean>? = dao.selectNoSuccess()
-                Log.i("aaa", " 自动上传 " + list?.size)
                 list?.let { it -> uploadIterator(it, true) }
             }
         })
@@ -420,12 +434,20 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
         }
 
 
-        NetWorkUtils.upload(upload_url, bean.filePath, object : UploadCallBack {
+        NetWorkUtils.upload(upload_url, bean.filePath, bean.qrcode, object : UploadCallBack {
             override fun uploadError(error: String, file_path: String) {
 
+                if(error.contains("当文件已存在时")){
 
-                bean.content = error
-                bean.status = 1
+                    bean.status = 0
+                    bean.content = "提交成功"
+
+                }else{
+
+                    bean.status = 1
+                    bean.content = error
+                }
+
                 listUploadFaile.add(bean)
                 list.removeAt(0)
                 uploadIterator(list, isAuto)
@@ -448,7 +470,6 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
 
         listUploadSuccess.clear()
         listUploadFaile.clear()
-
     }
 
     override fun onResume() {
@@ -470,7 +491,6 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
 
         filePath =
             context.getExternalFilesDir(Environment.DIRECTORY_DCIM)?.absolutePath + File.separator + "photo.apk"
-        Log.i("aaa", " filePath $filePath)")
         reUploadPhoto()
 
         deleteLastWeek()

@@ -2,6 +2,7 @@ package com.bondex.photo.net;
 
 import android.util.Log;
 
+import com.bondex.library.util.CommonUtils;
 import com.bondex.photo.bean.UploadResultBean;
 import com.bondex.photo.utils.itf.UploadCallBack;
 import com.google.gson.Gson;
@@ -58,7 +59,7 @@ public class NetWorkUtils {
         return request;
     }
 
-    public static void upload(String url, final String path, final UploadCallBack callback) {
+    public static void upload(String url, final String path, String param, final UploadCallBack callback) {
 
         File file = new File(path);
         String fileName = file.getName();
@@ -74,7 +75,10 @@ public class NetWorkUtils {
 
                 .build();
 
-        final String net_url = url + INTERFACE_ADDRESS;
+
+
+        final String net_url = CommonUtils.isEmpty(param) ? url + INTERFACE_ADDRESS : url + INTERFACE_ADDRESS+"?FlowNo="+param;
+
         Log.i("aaa", "upload_url " + net_url);
 
         Observable<UploadResultBean> observable = Observable.create(new ObservableOnSubscribe<UploadResultBean>() {

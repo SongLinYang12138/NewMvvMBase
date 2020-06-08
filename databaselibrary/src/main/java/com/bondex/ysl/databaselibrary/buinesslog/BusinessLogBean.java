@@ -30,6 +30,16 @@ public class BusinessLogBean {
 
     @ColumnInfo(name = "content")
     private String content;
+    @ColumnInfo(name = "qrcode")
+    private String qrcode;
+
+    public String getQrcode() {
+        return qrcode == null ? "" : qrcode;
+    }
+
+    public void setQrcode(String qrcode) {
+        this.qrcode = qrcode == null ? "" : qrcode;
+    }
 
     public BusinessLogBean() {
 

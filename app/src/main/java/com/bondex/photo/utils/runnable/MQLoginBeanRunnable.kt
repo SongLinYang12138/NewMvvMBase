@@ -20,6 +20,5 @@ class MQLoginBeanRunnable : Runnable {
 
 
         mqLogBean?.let { it -> mqLogDao?.insert(it) }
-        Log.i("aaa", "保存成功")
     }
 }

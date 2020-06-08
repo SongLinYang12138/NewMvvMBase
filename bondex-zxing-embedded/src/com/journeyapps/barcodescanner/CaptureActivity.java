@@ -1,15 +1,26 @@
 package com.journeyapps.barcodescanner;
 
-import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.os.Bundle;
 
+import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bondex.library.base.Constant;
 import com.bondex.library.util.StatusBarUtil;
+import com.bondex.library.util.ToastUtils;
+import com.google.zxing.Result;
 import com.google.zxing.client.android.R;
+import com.journeyapps.barcodescanner.inter.DecodeImgCallback;
+import com.journeyapps.barcodescanner.utils.DecodeImgThread;
+import com.journeyapps.barcodescanner.utils.ImageUtil;
+import com.qmuiteam.qmui.widget.QMUIRadiusImageView;
 
 /**
  *
@@ -17,6 +28,7 @@ import com.google.zxing.client.android.R;
 public class CaptureActivity extends AppCompatActivity {
     private CaptureManager capture;
     private DecoratedBarcodeView barcodeScannerView;
+    private QMUIRadiusImageView ivPicture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,10 +39,34 @@ public class CaptureActivity extends AppCompatActivity {
         capture = new CaptureManager(this, barcodeScannerView);
         capture.initializeFromIntent(getIntent(), savedInstanceState);
         capture.decode();
+
+        ivPicture = findViewById(R.id.iv_photo);
+
+        ivPicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                toCamera();
+            }
+        });
+
         initStatusBar();
     }
 
-    private void  initStatusBar() {
+    private void toCamera() {
+
+        try {
+            /*打开相册*/
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            startActivityForResult(intent, Constant.REQUEST_IMAGE);
+        }catch (ActivityNotFoundException e){
+            ToastUtils.showToast("未找到相应的activity");
+        }
+    }
+
+    private void initStatusBar() {
 
         StatusBarUtil.setColor(this, getResources().getColor(R.color.black_panit));
     }
@@ -43,7 +79,7 @@ public class CaptureActivity extends AppCompatActivity {
      */
     protected DecoratedBarcodeView initializeContent() {
         setContentView(R.layout.zxing_capture);
-        return (DecoratedBarcodeView)findViewById(R.id.zxing_barcode_scanner);
+        return (DecoratedBarcodeView) findViewById(R.id.zxing_barcode_scanner);
     }
 
     @Override
@@ -78,5 +114,42 @@ public class CaptureActivity extends AppCompatActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         return barcodeScannerView.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
+    }
+
+    /**
+     * @param rawResult 返回的扫描结果
+     */
+    public void handleDecode(Result rawResult) {
+
+        BarcodeResult result = new BarcodeResult(rawResult, null);
+
+        capture.returnResult(result);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == Constant.REQUEST_IMAGE && resultCode == RESULT_OK) {
+            String path = ImageUtil.getImageAbsolutePath(this, data.getData());
+
+
+            new DecodeImgThread(path, new DecodeImgCallback() {
+                @Override
+                public void onImageDecodeSuccess(Result result) {
+                    handleDecode(result);
+                    Log.i("aaa", " camera jiexi " + result.getText());
+                }
+
+                @Override
+                public void onImageDecodeFailed() {
+                    capture.returnResultTimeout();
+                    Log.i("aaa", " camera jiexi faile");
+
+                }
+            }).run();
+
+
+        }
     }
 }

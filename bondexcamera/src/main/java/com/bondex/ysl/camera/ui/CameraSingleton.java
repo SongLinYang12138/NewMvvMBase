@@ -8,13 +8,25 @@ import android.graphics.Matrix;
 import android.hardware.*;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.bondex.library.app.PhotoApplication;
+import com.bondex.ysl.camera.bean.BitmapBean;
+import com.bondex.ysl.camera.bean.ImgBean;
 import com.bondex.ysl.camera.compross.Luban;
 import com.bondex.ysl.camera.ui.utils.AngleUtil;
 import com.bondex.ysl.camera.ui.utils.CameraParamUtil;
+import com.bondex.ysl.camera.ui.utils.DecodeBitmapCallback;
+import com.google.zxing.Result;
+import com.journeyapps.barcodescanner.inter.DecodeImgCallback;
+import com.journeyapps.barcodescanner.utils.DecodeImgThread;
+import com.orhanobut.logger.Logger;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -53,6 +65,13 @@ public class CameraSingleton {
     //角度 旋转
     private int angle = 0;
     private int rotation = 0;
+
+    private Handler resultHandler;
+
+
+    public void setResultHandler(Handler resultHandler) {
+        this.resultHandler = resultHandler;
+    }
 
     //构造方法
     private CameraSingleton() {
@@ -233,7 +252,7 @@ public class CameraSingleton {
                             mode.contains("continuous-video");
                             mParams.setFocusMode("continuous-video");
 
-                            Log.i("aaa","自动对焦");
+                            Log.i("aaa", "自动对焦");
                         }
                     }
                 }
@@ -308,10 +327,10 @@ public class CameraSingleton {
 
                 startPreView();
                 String path = PhotoApplication.getContext().getExternalFilesDir(Environment.DIRECTORY_DCIM) + File.separator + "img";
-                String fileName = System.currentTimeMillis() + ".png";
-                String file_path = path + File.separator + fileName;
+                final String fileName = System.currentTimeMillis() + ".png";
+                final String file_path = path + File.separator + fileName;
 
-                savePri(data, path, fileName);
+                savePircture(data, path, fileName);
 
 
                 Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
@@ -323,8 +342,11 @@ public class CameraSingleton {
                     matrix.postScale(-1, 1);
                 }
                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+
+
                 if (callback != null) {
-                    callback.captureResult(bitmap, file_path);
+
+                    callback.captureResult(bitmap, file_path, fileName);
 
                 }
             }
@@ -333,7 +355,7 @@ public class CameraSingleton {
         });
     }
 
-    private void savePri(final byte[] bytes, final String path, final String fileName) {
+    private void savePircture(final byte[] bytes, final String path, final String fileName) {
 
 
         saveExecutors.execute(new Runnable() {
@@ -348,17 +370,51 @@ public class CameraSingleton {
                         file.mkdirs();
                     }
 
-                    String file_path = path + File.separator + fileName;
-                    file = new File(file_path);
+                    final String file_path = path + File.separator + fileName;
+                    final File tmpFile = new File(file_path);
 
-                    FileOutputStream fos = new FileOutputStream(file);
+                    FileOutputStream fos = new FileOutputStream(tmpFile);
                     fos.write(bytes, 0, bytes.length);
                     fos.flush();
                     fos.close();
 
-                    Luban.with(PhotoApplication.getContext()).ignoreBy(100).setTargetDir(file_path).setCompressRatio(100).load(file).get();
+                    new DecodeImgThread(file_path, new DecodeImgCallback() {
+                        @Override
+                        public void onImageDecodeSuccess(Result result) {
 
-                    Log.i("aaa", "照片路径 " + file.getAbsolutePath()+"  "+file.exists());
+                            Log.i("aaa", " decode success " + result.getText());
+
+                            if (resultHandler != null) {
+
+                                JSONObject ob = new JSONObject();
+                                try {
+                                    ob.put("fileName", fileName);
+                                    ob.put("qrCode", result.getText());
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                                Message msg = new Message();
+                                msg.what = 101;
+                                msg.obj = ob;
+                                resultHandler.sendMessage(msg);
+                            }
+
+
+                            Luban.with(PhotoApplication.getContext()).ignoreBy(100).setTargetDir(file_path).setCompressRatio(100).load(tmpFile).get();
+
+                        }
+
+                        @Override
+                        public void onImageDecodeFailed() {
+                            Log.i("aaa", "decode faile ");
+                            Luban.with(PhotoApplication.getContext()).ignoreBy(100).setTargetDir(file_path).setCompressRatio(100).load(tmpFile).get();
+
+                        }
+                    }).run();
+
+
+                    Log.i("aaa", "照片路径 " + file.getAbsolutePath() + "  " + file.exists());
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -424,6 +480,6 @@ public class CameraSingleton {
      * 拍照回调的接口
      */
     public interface TakePictureCallback {
-        void captureResult(Bitmap bitmap, String filePath);
+        void captureResult(Bitmap bitmap, String filePath, String fileName);
     }
 }

@@ -31,4 +31,5 @@ dependencies {
     implementation project(":library")
     implementation project(':databaselibrary')
     implementation project(":styleibrary")
+    implementation project(":bondex-zxing-embedded")
 }
