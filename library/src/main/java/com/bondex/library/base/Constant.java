@@ -15,5 +15,7 @@ public class Constant {
 
     public static final String SAVE_MQ_PAGE = "qr_code_page";
     public static final String SAVE_MQ_KEY = "qr_code";
+    public static final String AUTHORITY = "com.bondex.ysl.photo.fileprovider";
+
 
 }

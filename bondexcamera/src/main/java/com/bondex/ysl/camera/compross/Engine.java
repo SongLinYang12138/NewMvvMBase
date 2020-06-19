@@ -70,7 +70,7 @@ class Engine {
         Matrix matrix = new Matrix();
 
         matrix.postRotate(angle);
-
+        matrix.postScale(-1, 1);
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
@@ -87,7 +87,7 @@ class Engine {
             }
 
 //                相机直接拍照保存下来的图片需要旋转90.
-            tagBitmap = rotatingImage(tagBitmap, 90);
+            tagBitmap = rotatingImage(tagBitmap, 270);
 
 
             tagBitmap.compress(focusAlpha ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, compressRatio, stream);

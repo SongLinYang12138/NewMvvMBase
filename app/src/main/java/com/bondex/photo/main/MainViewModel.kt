@@ -70,7 +70,7 @@ import java.util.concurrent.TimeUnit
 class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener {
 
     val MENU_ITEMS =
-        arrayOf("重启mq", "显示二维码", "是否自动拍照", "压缩比率", "连拍设置", "查看MQ日志", "查看上传日志")
+        arrayOf("重启mq", "显示二维码", "是否自动拍照", "压缩比率", "连拍设置", "查看MQ日志", "查看上传日志","新拍照")
 
     val COMPRESS_RATIO_ITEMS = arrayOf("60%", "75%", "85%", "90%")
     val TAKE_DELAY_ITEMS = arrayOf("不连拍", "3", "5", "10")
@@ -279,7 +279,6 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
 
                     bean.status = 0
                     bean.content = "提交成功"
-
                 }else{
 
                     bean.status = 1

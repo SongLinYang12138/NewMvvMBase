@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.hardware.*;
 import android.os.Build;
 import android.os.Environment;
@@ -17,10 +18,26 @@ import com.bondex.library.app.PhotoApplication;
 import com.bondex.ysl.camera.bean.BitmapBean;
 import com.bondex.ysl.camera.bean.ImgBean;
 import com.bondex.ysl.camera.compross.Luban;
+import com.bondex.ysl.camera.decode.DecodeCallBack;
+import com.bondex.ysl.camera.decode.DecodeThread;
 import com.bondex.ysl.camera.ui.utils.AngleUtil;
 import com.bondex.ysl.camera.ui.utils.CameraParamUtil;
-import com.bondex.ysl.camera.ui.utils.DecodeBitmapCallback;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.DecodeHintType;
+import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
+import com.google.zxing.common.GlobalHistogramBinarizer;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.QRCodeReader;
+import com.journeyapps.barcodescanner.BitmapLuminanceSource;
+import com.journeyapps.barcodescanner.Decoder;
+import com.journeyapps.barcodescanner.DecoderFactory;
+import com.journeyapps.barcodescanner.DecoderResultPointCallback;
+import com.journeyapps.barcodescanner.DefaultDecoderFactory;
+import com.journeyapps.barcodescanner.Size;
+import com.journeyapps.barcodescanner.SourceData;
+import com.journeyapps.barcodescanner.camera.PreviewCallback;
 import com.journeyapps.barcodescanner.inter.DecodeImgCallback;
 import com.journeyapps.barcodescanner.utils.DecodeImgThread;
 import com.orhanobut.logger.Logger;
@@ -31,7 +48,11 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -46,10 +67,14 @@ import java.util.concurrent.TimeUnit;
 
 public class CameraSingleton {
 
+    private final String TAG = CameraSingleton.class.getSimpleName();
+
     private Camera mCamera;
     private Camera.Parameters mParams;
-    private boolean isPreviewing = false;//是否在预览
-    private static CameraSingleton instance;//单例
+    //是否在预览
+    private boolean isPreviewing = false;
+    //单例
+    private static CameraSingleton instance;
     private boolean isOpenflash;
     private CameraPrivewCallBack privewCallBack = null;
 
@@ -67,7 +92,16 @@ public class CameraSingleton {
     private int angle = 0;
     private int rotation = 0;
 
+    // Actual chosen preview size
+    private Size requestedPreviewSize;
+    private Size previewSize;
+
+    private String filePath;
     private Handler resultHandler;
+    private DecoderFactory decoderFactory;
+
+    final int nowAngle = (angle + 90) % 360;
+
 
 
     public void setResultHandler(Handler resultHandler) {
@@ -80,8 +114,11 @@ public class CameraSingleton {
         SELECTED_CAMERA = CAMERA_POST_POSITION;
         saveExecutors = new ThreadPoolExecutor(3, 5, 3, TimeUnit.SECONDS, workQueue);
 
+        filePath = PhotoApplication.getContext().getExternalFilesDir(Environment.DIRECTORY_DCIM) + File.separator + "img";
+
         privewCallBack = new CameraPrivewCallBack();
-        mCamera.setOneShotPreviewCallback(privewCallBack);
+
+
     }
 
     //获取实例
@@ -155,6 +192,19 @@ public class CameraSingleton {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1) {
             mCamera.enableShutterSound(false);
         }
+
+
+        Camera.Size realPreviewSize = mCamera.getParameters().getPreviewSize();
+        previewSize = new Size(realPreviewSize.width, realPreviewSize.height);
+        privewCallBack.setResolution(previewSize);
+
+        mCamera.setOneShotPreviewCallback(privewCallBack);
+    }
+
+    public void startDecodeThread() {
+
+
+
     }
 
     /**
@@ -178,14 +228,9 @@ public class CameraSingleton {
         if (mHolder == null) {
             return;
         }
-//        try {
-//            mCamera.setPreviewDisplay(mHolder);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
 
         doStartPreview(mHolder, screenProp, isOpenflash);
+
 
     }
 
@@ -264,6 +309,8 @@ public class CameraSingleton {
                     mParams.setPictureFormat(ImageFormat.JPEG);
                     mParams.setJpegQuality(100);
                 }
+
+
                 mCamera.setParameters(mParams);
                 mParams = mCamera.getParameters();
                 //SurfaceView
@@ -276,6 +323,18 @@ public class CameraSingleton {
             } catch (Exception e) {
                 mCamera.stopPreview();
             }
+        }
+//        startDecodeThread();
+    }
+
+    public void requestNextPreivew(DecodeCallBack callback) {
+        Camera threCamera = mCamera;
+
+        Log.i("aaa", "requestPreview " + isPreviewing);
+        if (threCamera != null && isPreviewing) {
+
+            privewCallBack.setCallback(callback);
+            threCamera.setOneShotPreviewCallback(privewCallBack);
         }
     }
 
@@ -317,7 +376,7 @@ public class CameraSingleton {
 
     public void takePicture(final TakePictureCallback callback) {
 
-        final int nowAngle = (angle + 90) % 360;
+
 
         if (!isPreviewing) { //如果没有预览，就不能调用拍照功能;
             return;
@@ -329,14 +388,14 @@ public class CameraSingleton {
             public void onPictureTaken(byte[] data, Camera camera) {
 
                 startPreView();
-                String path = PhotoApplication.getContext().getExternalFilesDir(Environment.DIRECTORY_DCIM) + File.separator + "img";
                 final String fileName = System.currentTimeMillis() + ".png";
-                final String file_path = path + File.separator + fileName;
+                final String file_path = filePath + File.separator + fileName;
 
-                savePircture(data, path, fileName);
+                savePircture(data, filePath, fileName);
 
 
                 Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+
                 Matrix matrix = new Matrix();
                 if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
                     matrix.setRotate(nowAngle);
@@ -345,7 +404,6 @@ public class CameraSingleton {
                     matrix.postScale(-1, 1);
                 }
                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-
 
                 if (callback != null) {
 
@@ -357,7 +415,6 @@ public class CameraSingleton {
 
         });
     }
-
 
     private void savePircture(final byte[] bytes, final String path, final String fileName) {
 
@@ -446,6 +503,11 @@ public class CameraSingleton {
         }
     }
 
+    public int getCameraRotation() {
+        return angle;
+    }
+
+
     /**
      * 注册传感器管理器
      *
@@ -471,6 +533,23 @@ public class CameraSingleton {
         sm.unregisterListener(sensorEventListener);
     }
 
+
+    private Decoder createDecoder() {
+        if (decoderFactory == null) {
+            decoderFactory = createDefaultDecoderFactory();
+        }
+        DecoderResultPointCallback callback = new DecoderResultPointCallback();
+        Map<DecodeHintType, Object> hints = new HashMap<>();
+        hints.put(DecodeHintType.NEED_RESULT_POINT_CALLBACK, callback);
+        Decoder decoder = this.decoderFactory.createDecoder(hints);
+        callback.setDecoder(decoder);
+        return decoder;
+    }
+
+    protected DecoderFactory createDefaultDecoderFactory() {
+        return new DefaultDecoderFactory();
+    }
+
     /**
      * 打开摄像头的回调接口
      */
@@ -478,6 +557,7 @@ public class CameraSingleton {
         void cameraHasOpened();
 
         void cameraSwitchSuccess();
+
     }
 
     /**
@@ -488,9 +568,61 @@ public class CameraSingleton {
     }
 
     private class CameraPrivewCallBack implements Camera.PreviewCallback {
+        private Size resolution;
+        private DecodeCallBack callback;
+
+        public void setCallback(DecodeCallBack callback) {
+            this.callback = callback;
+        }
+
+        public void setResolution(Size resolution) {
+            this.resolution = resolution;
+        }
+
+
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
-            Log.i("aaa", "onPreview " + data.length);
+
+
+            Size cameraResolution = resolution;
+
+            DecodeCallBack callback = this.callback;
+            if (cameraResolution != null && callback != null) {
+                try {
+                    if (data == null) {
+                        throw new NullPointerException("No preview data received");
+                    }
+//                    int format = camera.getParameters().getPreviewFormat();
+//                    SourceData source = new SourceData(data, (int) (cameraResolution.width * 0.75), (int) (cameraResolution.height * 0.75), format, getCameraRotation());
+//                    callback.onPreview(source);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+
+                    Matrix matrix = new Matrix();
+                    if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
+                        matrix.setRotate(nowAngle);
+                    } else if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
+                        matrix.setRotate(270);
+                        matrix.postScale(-1, 1);
+                    }
+                    bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+
+                    callback.onPreview(bitmap);
+
+                } catch (RuntimeException e) {
+                    // Could be:
+                    // java.lang.RuntimeException: getParameters failed (empty parameters)
+                    // IllegalArgumentException: Image data does not match the resolution
+                    Log.e(TAG, "Camera preview failed", e);
+                    callback.onPreviewError(e);
+                }
+            } else {
+                Log.d(TAG, "Got preview callback, but no handler or resolution available");
+                if (callback != null) {
+                    // Should generally not happen
+                    callback.onPreviewError(new Exception("No resolution available"));
+                }
+            }
+
         }
     }
 }

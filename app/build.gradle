@@ -21,13 +21,40 @@ android {
     dataBinding {
         enabled = true
     }
+    signingConfigs {
+
+        release {
+
+            keyAlias '123456'
+            keyPassword '123456'
+            storeFile file('/ysltest.jks')
+            storePassword '123456'
+        }
+
+        debug {
+
+            keyAlias '123456'
+            keyPassword '123456'
+            storeFile file('/ysltest.jks')
+            storePassword '123456'
+        }
+
+    }
+
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
+
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+
         }
     }
-
    applicationVariants.all{
 
        //判断是release还是debug版本

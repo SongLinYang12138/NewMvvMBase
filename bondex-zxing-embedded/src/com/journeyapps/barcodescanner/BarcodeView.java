@@ -4,10 +4,12 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.ResultPoint;
 import com.google.zxing.client.android.R;
+import com.journeyapps.barcodescanner.inter.DecodeCameraImgCallBack;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,13 +36,14 @@ public class BarcodeView extends CameraPreview {
 
     private DecodeMode decodeMode = DecodeMode.NONE;
     private BarcodeCallback callback = null;
-//        private DecoderThread decoderThread;
+    //        private DecoderThread decoderThread;
     private ConcurrentDecodeThread decoderThread;
 
     private DecoderFactory decoderFactory;
 
-
     private Handler resultHandler;
+
+    private boolean isCamera = false;
 
     private final Handler.Callback resultCallback = new Handler.Callback() {
         @Override
@@ -122,6 +125,11 @@ public class BarcodeView extends CameraPreview {
         return decoder;
     }
 
+    public void setIsCamera(boolean isCamera) {
+
+        this.isCamera = isCamera;
+    }
+
     /**
      * @return the current DecoderFactory in use.
      */
@@ -168,7 +176,14 @@ public class BarcodeView extends CameraPreview {
         return new DefaultDecoderFactory();
     }
 
-    private void startDecoderThread() {
+    public void takePicture(DecodeCameraImgCallBack cameraImgCallBack) {
+
+
+        getCameraInstance().takePicture(cameraImgCallBack);
+    }
+
+    public void startDecoderThread() {
+
         stopDecoderThread(); // To be safe
 
         if (decodeMode != DecodeMode.NONE && isPreviewActive()) {
@@ -180,8 +195,22 @@ public class BarcodeView extends CameraPreview {
 
             decoderThread.setCropRect(getPreviewFramingRect());
             decoderThread.start();
+
+            if (isCamera) {
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        Log.i("aaa", "stopdecodethread");
+                        stopDecoderThread();
+                    }
+                }, 5000);
+            }
+
         }
     }
+
 
     @Override
     protected void previewStarted() {
@@ -205,7 +234,6 @@ public class BarcodeView extends CameraPreview {
     @Override
     public void pause() {
         stopDecoderThread();
-
-        super.pause();
+            super.pause();
     }
 }

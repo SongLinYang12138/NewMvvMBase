@@ -7,6 +7,7 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 
+import com.google.zxing.LuminanceSource;
 import com.google.zxing.PlanarYUVLuminanceSource;
 
 import java.io.ByteArrayOutputStream;
@@ -15,31 +16,42 @@ import java.io.ByteArrayOutputStream;
  * Raw preview data from a camera.
  */
 public class SourceData {
-    /** Raw YUV data */
+    /**
+     * Raw YUV data
+     */
     private byte[] data;
 
-    /** Source data width */
+    /**
+     * Source data width
+     */
     private int dataWidth;
 
-    /** Source data height */
+    /**
+     * Source data height
+     */
     private int dataHeight;
 
-    /** The format of the image data. ImageFormat.NV21 and ImageFormat.YUY2 are supported. */
+    /**
+     * The format of the image data. ImageFormat.NV21 and ImageFormat.YUY2 are supported.
+     */
     private int imageFormat;
 
-    /** Rotation in degrees (0, 90, 180 or 270). This is camera rotation relative to display rotation. */
+    /**
+     * Rotation in degrees (0, 90, 180 or 270). This is camera rotation relative to display rotation.
+     */
     private int rotation;
 
-    /** Crop rectangle, in display orientation. */
+    /**
+     * Crop rectangle, in display orientation.
+     */
     private Rect cropRect;
 
     /**
-     *
-     * @param data the image data
-     * @param dataWidth width of the data
-     * @param dataHeight height of the data
+     * @param data        the image data
+     * @param dataWidth   width of the data
+     * @param dataHeight  height of the data
      * @param imageFormat ImageFormat.NV21 or ImageFormat.YUY2
-     * @param rotation camera rotation relative to display rotation, in degrees (0, 90, 180 or 270).
+     * @param rotation    camera rotation relative to display rotation, in degrees (0, 90, 180 or 270).
      */
     public SourceData(byte[] data, int dataWidth, int dataHeight, int imageFormat, int rotation) {
         this.data = data;
@@ -47,7 +59,7 @@ public class SourceData {
         this.dataHeight = dataHeight;
         this.rotation = rotation;
         this.imageFormat = imageFormat;
-        if(dataWidth * dataHeight > data.length) {
+        if (dataWidth * dataHeight > data.length) {
             throw new IllegalArgumentException("Image data does not match the resolution. " + dataWidth + "x" + dataHeight + " > " + data.length);
         }
 
@@ -71,7 +83,6 @@ public class SourceData {
     }
 
     /**
-     *
      * @return width of the data
      */
     public int getDataWidth() {
@@ -79,7 +90,6 @@ public class SourceData {
     }
 
     /**
-     *
      * @return height of the data
      */
     public int getDataHeight() {
@@ -87,7 +97,6 @@ public class SourceData {
     }
 
     /**
-     *
      * @return true if the preview image is rotated orthogonal to the display
      */
     public boolean isRotated() {
@@ -110,6 +119,12 @@ public class SourceData {
         }
     }
 
+    public BitmapLuminanceSource createLum() {
+
+        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+        return new BitmapLuminanceSource(bitmap);
+    }
+
     /**
      * Return the source bitmap (cropped; in display orientation).
      *
@@ -130,7 +145,7 @@ public class SourceData {
     }
 
     private Bitmap getBitmap(Rect cropRect, int scaleFactor) {
-        if(isRotated()) {
+        if (isRotated()) {
             //noinspection SuspiciousNameCombination
             cropRect = new Rect(cropRect.top, cropRect.left, cropRect.bottom, cropRect.right);
         }

@@ -5,6 +5,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.os.Handler
 import android.os.IBinder
 import android.util.Log
 import android.view.View
@@ -26,7 +27,9 @@ import com.bondex.photo.service.MqService
 import com.bondex.ysl.camera.CameraActivity
 import com.bondex.ysl.camera.ISCameraConfig
 import com.bondex.ysl.camera.ISNav
+import com.bondex.ysl.camera.decode.DecodeCameraActivity
 import com.bondex.ysl.databaselibrary.buinesslog.BusinessLogBean
+import com.google.zxing.client.android.Intents
 import com.google.zxing.integration.android.IntentIntegrator
 import com.qmuiteam.qmui.skin.QMUISkinManager
 import com.qmuiteam.qmui.util.QMUIDisplayHelper
@@ -115,11 +118,11 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
         showRight(true, R.string.camera, object : NoDoubleClickListener() {
             override fun click(v: View?) {
 
-                if (viewModel.haveStart) {
-                    toCamera(false)
-                } else {
-                    ToastUtils.showToast("请先启动mq")
-                }
+//                if (viewModel.haveStart) {
+                toCamera(false)
+//                } else {
+//                    ToastUtils.showToast("请先启动mq")
+//                }
             }
         })
 
@@ -158,6 +161,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
                         4 -> chooseTakeDelay()
                         5 -> toLog(true)
                         6 -> toLog(false)
+                        7 -> toNewCamera()
                     }
                     dialog.dismiss()
                 }
@@ -167,6 +171,17 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
         }
         it_scan.setOnClickListener { _ -> toScan() }
         registerObserver()
+    }
+
+    private fun toNewCamera() {
+        val intent = Intent(this@MainActivity, DecodeCameraActivity::class.java)
+
+        intent.putExtra(Intents.Scan.BEEP_ENABLED, true)
+        intent.setAction(Intents.Scan.ACTION)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET)
+
+        startActivityForResult(intent, REQUEST_CODE_SCAN)
     }
 
     private fun toLog(isMq: Boolean) {
@@ -191,7 +206,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
 
     fun toCamera(isAuto: Boolean): Unit {
 
-        Log.i("aaa", "activity compressRation " + getRealCompressRatio())
 
         val takeDelay =
             if (viewModel.getTakeDelay() == 0) 0 else viewModel.TAKE_DELAY_ITEMS[viewModel.getTakeDelay()].toInt()
@@ -199,7 +213,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
             .setTakeDelay(takeDelay)
             .setAutotake(if (isAuto) viewModel.autoTakePhoto() else false).build()
 
-        ISNav.getInstance().toCamera(this, config, IMG_REQUEST)
+        DecodeCameraActivity.startActivityForResult(this, config, IMG_REQUEST)
+//        ISNav.getInstance().toCamera(this, config, IMG_REQUEST)
 
     }
 
@@ -207,7 +222,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
         //TODO 扫描
         IntentIntegrator(this).setBeepEnabled(true).setRequestCode(REQUEST_CODE_SCAN)
             .initiateScan()
-
     }
 
     private fun showQrCodeDialog() {
@@ -254,7 +268,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
             ) { dialog, index -> dialog?.dismiss() }
             .addAction("确定") { dialog, index ->
 
-                Log.i("aaa", "auto check " + qmuiDailogBuilder.isChecked)
                 viewModel.saveAutoTakePhoto(qmuiDailogBuilder.isChecked)
                 dialog.dismiss()
             }
@@ -304,7 +317,12 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
                 }
             })
         }
-        builder.create(mCurrentDialogStyle).show()
+        val dialog = builder.create(mCurrentDialogStyle)
+        dialog.show()
+
+        if (isSuccess) {
+            Handler().postDelayed({ dialog.dismiss() }, 1000)
+        }
 
 
     }
@@ -411,6 +429,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
                     return
                 }
                 viewModel.clearUploadList()
+                viewModel.loading.postValue(true)
                 viewModel.uploadImage(listImg)
 
 

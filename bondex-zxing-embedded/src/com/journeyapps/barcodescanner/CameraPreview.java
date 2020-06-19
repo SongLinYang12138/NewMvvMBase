@@ -637,6 +637,7 @@ public class CameraPreview extends ViewGroup {
         Util.validateMainThread();
         Log.d(TAG, "pause()");
 
+
         openedOrientation = -1;
         if (cameraInstance != null) {
             cameraInstance.close();
@@ -757,6 +758,18 @@ public class CameraPreview extends ViewGroup {
         openedOrientation = getDisplayRotation();
     }
 
+    private void startCameraPreview(CameraSurface surface) {
+        if (!previewActive && cameraInstance != null) {
+            Log.i(TAG, "Starting preview");
+            cameraInstance.setSurface(surface);
+            cameraInstance.startPreview();
+            previewActive = true;
+
+            previewStarted();
+            fireState.previewStarted();
+        }
+    }
+
     /**
      * Create a new CameraInstance.
      *
@@ -768,18 +781,6 @@ public class CameraPreview extends ViewGroup {
         CameraInstance cameraInstance = new CameraInstance(getContext());
         cameraInstance.setCameraSettings(cameraSettings);
         return cameraInstance;
-    }
-
-    private void startCameraPreview(CameraSurface surface) {
-        if (!previewActive && cameraInstance != null) {
-            Log.i(TAG, "Starting preview");
-            cameraInstance.setSurface(surface);
-            cameraInstance.startPreview();
-            previewActive = true;
-
-            previewStarted();
-            fireState.previewStarted();
-        }
     }
 
     /**

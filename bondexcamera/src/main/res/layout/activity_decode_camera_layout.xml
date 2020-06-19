@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ImageView
+        android:id="@+id/iv_picture"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"/>
+    <com.journeyapps.barcodescanner.DecoratedBarcodeView
+        android:id="@+id/zxing_barcode_scanner"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:zxing_preview_scaling_strategy="centerCrop"
+        app:zxing_use_texture_view="false" />
+
+    <RelativeLayout
+        android:id="@+id/rl_take_photo"
+        android:layout_width="match_parent"
+        android:layout_height="63dp"
+        android:alpha="0.8"
+        android:background="#000"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_auto"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:paddingLeft="9dp"
+            android:visibility="gone"
+            android:src="@mipmap/qhb_take_picture_auto"
+
+            />
+
+        <TextView
+            android:id="@+id/tv_auto"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_toRightOf="@id/iv_auto"
+            android:gravity="center_vertical"
+android:visibility="gone"
+            android:text="关闭"
+            android:textColor="#fff" />
+
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:id="@+id/rl_take_picture_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="160dp"
+        android:layout_alignParentBottom="true"
+        android:background="#000"
+        android:padding="10dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent">
+        <!-- 拍照按钮 -->
+        <ImageView
+            android:id="@+id/takepicture"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="48dp"
+            android:rotation="90"
+            android:src="@drawable/take_picture" />
+
+        <TextView
+            android:id="@+id/tv_cancel_take_pic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/takepicture"
+            android:padding="20dp"
+            android:text="取消"
+            android:textColor="#fff"
+            android:textSize="14dp" />
+
+        <TextView
+            android:id="@+id/tv_finish_take_pic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/takepicture"
+            android:layout_alignParentRight="true"
+
+            android:padding="20dp"
+            android:text="完成"
+            android:textColor="#fff"
+            android:textSize="14dp" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_choose_picture"
+        android:layout_width="match_parent"
+        android:layout_height="160dp"
+        android:background="#000"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:padding="50dp"
+            android:src="@mipmap/qhb_take_picture_cancel" />
+
+        <ImageView
+            android:id="@+id/iv_confirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:padding="50dp"
+            android:src="@mipmap/qhb_take_picture_confirm" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -11,13 +11,12 @@ import androidx.annotation.Nullable;
  * @Author: ysl
  * description:
  */
-public class ImgBean  implements Parcelable{
+public class ImgBean implements Parcelable {
 
     private String path;
-    private String  qrCode;
+    private String qrCode;
     private String fileName;
     private int id;
-
 
 
     public ImgBean() {
@@ -86,11 +85,15 @@ public class ImgBean  implements Parcelable{
     @Override
     public boolean equals(@Nullable Object obj) {
 
-        if(obj == null) {
+        if (obj == null) {
             return false;
         }
 
         ImgBean bean = (ImgBean) obj;
+        if (this == null || this.fileName == null) {
+            return false;
+        }
+
 
         return this.fileName.equals(bean.getFileName());
     }

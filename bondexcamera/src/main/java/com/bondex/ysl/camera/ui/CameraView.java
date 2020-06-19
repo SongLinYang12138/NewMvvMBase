@@ -2,19 +2,28 @@ package com.bondex.ysl.camera.ui;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
+import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.VideoView;
 
-/** 
+import com.journeyapps.barcodescanner.Size;
+import com.journeyapps.barcodescanner.camera.CenterCropStrategy;
+import com.journeyapps.barcodescanner.camera.DisplayConfiguration;
+import com.journeyapps.barcodescanner.camera.PreviewScalingStrategy;
+
+/**
  * 自定义的Cameraview
+ *
  * @autor timi
- * create at 2017/6/2 10:44 
+ * create at 2017/6/2 10:44
  */
-public class CameraView extends RelativeLayout implements CameraSingleton.CamOpenOverCallback, SurfaceHolder.Callback{
+public class CameraView extends RelativeLayout implements CameraSingleton.CamOpenOverCallback, SurfaceHolder.Callback {
     private Context mContext;
-//    //显示拍照后的图片
+    //    //显示拍照后的图片
 //    private ImageView mPhoto;
     //拍照后保存图片的Bitmap
     private Bitmap captureBitmap;
@@ -22,6 +31,9 @@ public class CameraView extends RelativeLayout implements CameraSingleton.CamOpe
     private float screenProp;
     //用于预览
     private VideoView mVideoView;
+
+
+
     public CameraView(Context context) {
         this(context, null);
     }
@@ -35,6 +47,7 @@ public class CameraView extends RelativeLayout implements CameraSingleton.CamOpe
         mContext = context;
         initView();
     }
+
     private void initView() {
         setWillNotDraw(false);
         this.setBackgroundColor(0xff000000);
@@ -46,6 +59,8 @@ public class CameraView extends RelativeLayout implements CameraSingleton.CamOpe
         this.addView(mVideoView);
         mVideoView.getHolder().addCallback(this);
     }
+
+
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         new Thread() {
@@ -55,6 +70,8 @@ public class CameraView extends RelativeLayout implements CameraSingleton.CamOpe
             }
         }.start();
     }
+
+
 
     @Override
     public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
@@ -68,13 +85,17 @@ public class CameraView extends RelativeLayout implements CameraSingleton.CamOpe
 
     @Override
     public void cameraHasOpened() {
-        CameraSingleton.getInstance().doStartPreview(mVideoView.getHolder(), screenProp,false);
+        CameraSingleton.getInstance().doStartPreview(mVideoView.getHolder(), screenProp, false);
     }
+
     private boolean switching = false;
+
     @Override
     public void cameraSwitchSuccess() {
         switching = false;
     }
+
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -82,6 +103,7 @@ public class CameraView extends RelativeLayout implements CameraSingleton.CamOpe
         float heightSize = MeasureSpec.getSize(heightMeasureSpec);
         screenProp = heightSize / widthSize;
     }
+
     /**
      * start preview
      */

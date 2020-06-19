@@ -6,6 +6,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Environment;
 import android.provider.SyncStateContract;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -114,6 +115,7 @@ public class PhotoApplication extends BaseApplication implements Thread.Uncaught
     public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
         String result = getStackTrace(e);
         Logger.i(" 异常 " + result);
+        Log.i("aaa","异常 "+result);
 //        Intent intent = new Intent(this, LoginActivity.class);
 //        startActivity(intent);
     }

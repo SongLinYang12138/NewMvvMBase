@@ -12,7 +12,6 @@ import com.google.zxing.MultiFormatReader;
 import com.google.zxing.Result;
 import com.google.zxing.client.android.DecodeFormatManager;
 import com.google.zxing.common.GlobalHistogramBinarizer;
-import com.google.zxing.common.HybridBinarizer;
 import com.journeyapps.barcodescanner.BitmapLuminanceSource;
 import com.journeyapps.barcodescanner.inter.DecodeImgCallback;
 
@@ -87,8 +86,6 @@ public class DecodeImgThread extends Thread {
         } else {
             callback.onImageDecodeFailed();
         }
-
-
     }
 
 

@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -30,20 +31,12 @@ import com.bondex.ysl.camera.bean.BitmapBean;
 import com.bondex.ysl.camera.bean.ImgBean;
 import com.bondex.ysl.camera.ui.CameraSingleton;
 import com.bondex.ysl.camera.ui.CameraView;
-import com.bondex.ysl.camera.ui.utils.DecodeBitmapCallback;
-import com.google.zxing.Result;
-import com.bondex.ysl.camera.ui.DecodeBitmapThread;
-import com.journeyapps.barcodescanner.CaptureManager;
-import com.journeyapps.barcodescanner.DecoratedBarcodeView;
-import com.orhanobut.logger.Logger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * date: 2019/7/17
@@ -85,7 +78,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      */
     private ArrayList<ImgBean> takeImgs = new ArrayList<>();
 
-
     public static final String FINISH_KEY = "result";
     private static final int TAKE_PHOTO = 0;
     private static final int FINISH = 1;
@@ -97,8 +89,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private TextView tvCancel, tvFinish;
     private BitmapBean curentBitmap;
 
-
-    private boolean startTak = false;
     private int delayTime = 0;
 
     @Override
@@ -181,6 +171,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     protected void onStart() {
         super.onStart();
 
+
         if (config.isAutoTak) {
 
             new Handler().postDelayed(new Runnable() {
@@ -189,7 +180,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
                     autoTake();
                 }
-            }, 2000);
+            }, 800);
 
         }
     }
@@ -209,18 +200,15 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
 
                         takeHandle.sendEmptyMessage(TAKE_PHOTO);
-                        startTak = false;
+
 
                         try {
 
-//                            while (!startTak) {
-//                                Log.i("aaa", "循环检查" + startTak);
-//                                Thread.sleep(500);
-//                            }
+
 
                             if (i == 2 && config.isAutoTak) {
 //         等待2s，用于保存照片
-                                Thread.sleep(3000);
+                                Thread.sleep(1000);
                                 takeHandle.sendEmptyMessage(FINISH);
                             }
                             Thread.sleep(delayTime);
@@ -234,12 +222,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                     }
                 } else {
 
-                    try {
-                        Thread.sleep(2000);
-                        takeHandle.sendEmptyMessage(TAKE_PHOTO);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    takeHandle.sendEmptyMessage(TAKE_PHOTO);
                 }
 
 
@@ -264,7 +247,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         super.onDestroy();
         CameraSingleton.getInstance().doDestroyCamera();
         Log.i("JCameraView", "onDestroy");
-        startTak = false;
+
     }
 
 
@@ -358,6 +341,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 public void cameraSwitchSuccess() {
                     tvAuto.setText(isOpen ? "开启" : "关闭");
                 }
+
+
             });
 
 
@@ -373,6 +358,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 public void cameraSwitchSuccess() {
 
                 }
+
             });
         }
     }
@@ -397,7 +383,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 iv_picture.setImageBitmap(bitmap);
                 //设置显示  是否确认的布局
                 setLayoutStatus(true);
-
                 if (config.isAutoTak || config.takeDelay > 0) {
                     savePicture();
                 }
@@ -423,7 +408,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 @Override
                 public void run() {
                     setLayoutStatus(false);
-                    startTak = true;
+
                 }
             }, 1500);
         }
@@ -470,9 +455,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         //surfaceview
         cameraView.setVisibility(isShowConfirmPhtoGraph ? View.GONE : View.VISIBLE);
 
-//        if (!isShowConfirmPhtoGraph) {
-//            CameraSingleton.getInstance().autoCameraFocus();
-//        }
+        if (!isShowConfirmPhtoGraph) {
+            CameraSingleton.getInstance().autoCameraFocus();
+        }
 
         //图片的预览
         iv_picture.setVisibility(isShowConfirmPhtoGraph ? View.VISIBLE : View.GONE);
@@ -554,6 +539,23 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
                     if (curentBitmap != null && curentBitmap.getFileName().equals(fileName)) {
                         curentBitmap.setQrCode(qrcode);
+
+                        if (config.isAutoTak && config.takeDelay == 0) {
+
+
+                            ImgBean imgBean = new ImgBean(curentBitmap.getPath(), curentBitmap.getQrCode(), curentBitmap.getFileName(), 0);
+
+                            if (takeImgs.contains(imgBean)) {
+
+                                int index = takeImgs.indexOf(imgBean);
+                                takeImgs.set(index, imgBean);
+                            } else {
+                                takeImgs.add(imgBean);
+                            }
+                            onFinish();
+                        }
+
+
                     }
 
                 } catch (JSONException e) {

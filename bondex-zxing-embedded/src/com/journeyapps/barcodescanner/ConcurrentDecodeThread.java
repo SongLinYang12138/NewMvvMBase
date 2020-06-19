@@ -13,6 +13,7 @@ import com.google.zxing.ResultPoint;
 import com.google.zxing.client.android.R;
 import com.journeyapps.barcodescanner.camera.CameraInstance;
 import com.journeyapps.barcodescanner.camera.PreviewCallback;
+import com.journeyapps.barcodescanner.inter.DecodeCameraImgCallBack;
 
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -60,6 +61,7 @@ public class ConcurrentDecodeThread {
     private Rect cropRect;
     private boolean running = false;
     private final Object LOCK = new Object();
+    private boolean isCamera;
 
     private final Handler.Callback callback = new Handler.Callback() {
         @Override
@@ -85,7 +87,6 @@ public class ConcurrentDecodeThread {
         this.resultHandler = resultHandler;
 
         executor = new ThreadPoolExecutor(3, 5, 3, TimeUnit.SECONDS, workQueue, factory, rejectHandler);
-
     }
 
     public Decoder getDecoder() {

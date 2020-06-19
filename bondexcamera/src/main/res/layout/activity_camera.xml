@@ -156,8 +156,9 @@
             android:alpha="0.8"
             android:background="#000"
             android:layout_below="@id/rl_bar"
-android:visibility="gone"
-    >
+        android:visibility="gone"
+
+        >
 
         <ImageView
                 android:id="@+id/iv_back"

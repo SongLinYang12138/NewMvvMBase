@@ -18,6 +18,7 @@ import com.google.zxing.client.android.Intents;
 import com.google.zxing.client.android.R;
 import com.journeyapps.barcodescanner.camera.CameraParametersCallback;
 import com.journeyapps.barcodescanner.camera.CameraSettings;
+import com.journeyapps.barcodescanner.inter.DecodeCameraImgCallBack;
 
 import java.util.List;
 import java.util.Map;
@@ -116,6 +117,11 @@ public class DecoratedBarcodeView extends FrameLayout {
         statusView = (TextView) findViewById(R.id.zxing_status_view);
     }
 
+    public void setIsCamera(boolean camera) {
+        barcodeView.setIsCamera(camera);
+    }
+
+
     /**
      * Initialize with no custom attributes setted.
      */
@@ -170,6 +176,15 @@ public class DecoratedBarcodeView extends FrameLayout {
         if(statusView != null) {
             statusView.setText(text);
         }
+    }
+
+    public void takePicture(DecodeCameraImgCallBack cameraImgCallBack){
+        barcodeView.takePicture(cameraImgCallBack);
+    }
+
+    public void startDcoed(){
+
+        barcodeView.startDecoderThread();
     }
 
     /**

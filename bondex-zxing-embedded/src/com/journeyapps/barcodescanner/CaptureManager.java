@@ -71,11 +71,11 @@ public class CaptureManager {
 
     private boolean finishWhenClosed = false;
     private boolean isCamera = false;
+    private BarcodeCallback cameraCallback;
 
     private BarcodeCallback callback = new BarcodeCallback() {
         @Override
         public void barcodeResult(final BarcodeResult result) {
-            barcodeView.pause();
             beepManager.playBeepSoundAndVibrate();
 
             if (!isCamera) {
@@ -85,11 +85,16 @@ public class CaptureManager {
                         returnResult(result);
                     }
                 });
+                barcodeView.pause();
+
             } else {
 
 //                finishWhenClosed = true;
-                barcodeView.pause();
-                inactivityTimer.cancel();
+//                barcodeView.pause();
+//                inactivityTimer.cancel();
+                if (cameraCallback != null) {
+                    cameraCallback.barcodeResult(result);
+                }
                 Log.i("aaa", " isCamera " + result.getText());
             }
 
@@ -149,6 +154,11 @@ public class CaptureManager {
         beepManager = new BeepManager(activity);
     }
 
+    public void setIsCamrera(boolean isCamera, BarcodeCallback cameraCallback) {
+        this.isCamera = isCamera;
+        this.cameraCallback = cameraCallback;
+    }
+
     /**
      * Perform initialization, according to preferences set in the intent.
      *
@@ -195,26 +205,6 @@ public class CaptureManager {
                 returnBarcodeImagePath = true;
             }
         }
-    }
-
-    public void initializeFromCamera() {
-        Window window = activity.getWindow();
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        beepManager.setBeepEnabled(false);
-
-//            if (Intents.Scan.ACTION.equals(intent.getAction())) {
-//                barcodeView.initializeFromIntent(intent);
-//            }
-
-
-//                Runnable runnable = new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        returnResultTimeout();
-//                    }
-//                };
-//                handler.postDelayed(runnable,30000);
-
     }
 
     /**
@@ -457,4 +447,12 @@ public class CaptureManager {
     public static void setCameraPermissionReqCode(int cameraPermissionReqCode) {
         CaptureManager.cameraPermissionReqCode = cameraPermissionReqCode;
     }
+
+    public void finishSelf() {
+
+        finishWhenClosed = true;
+        barcodeView.pause();
+
+    }
+
 }
