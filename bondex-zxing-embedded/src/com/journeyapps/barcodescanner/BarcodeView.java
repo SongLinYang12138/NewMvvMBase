@@ -128,6 +128,7 @@ public class BarcodeView extends CameraPreview {
     public void setIsCamera(boolean isCamera) {
 
         this.isCamera = isCamera;
+
     }
 
     /**
@@ -177,6 +178,10 @@ public class BarcodeView extends CameraPreview {
     }
 
     public void takePicture(DecodeCameraImgCallBack cameraImgCallBack) {
+
+        if (getCameraInstance() == null) {
+            resume();
+        }
 
 
         getCameraInstance().takePicture(cameraImgCallBack);
@@ -234,6 +239,6 @@ public class BarcodeView extends CameraPreview {
     @Override
     public void pause() {
         stopDecoderThread();
-            super.pause();
+        super.pause();
     }
 }

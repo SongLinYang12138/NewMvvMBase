@@ -17,6 +17,7 @@
 package com.journeyapps.barcodescanner.camera;
 
 import android.content.Context;
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.os.Build;
 import android.util.Log;
@@ -74,6 +75,8 @@ public final class CameraManager {
     private int rotationDegrees = -1;    // camera rotation vs display rotation
 
     private Context context;
+
+    private boolean isCamera = true;
 
 
     private final class CameraPreviewCallback implements Camera.PreviewCallback {
@@ -144,6 +147,10 @@ public final class CameraManager {
         int cameraId = OpenCameraInterface.getCameraId(settings.getRequestedCameraId());
         cameraInfo = new Camera.CameraInfo();
         Camera.getCameraInfo(cameraId, cameraInfo);
+    }
+
+    public void setIsCamera(boolean camera) {
+        isCamera = camera;
     }
 
     /**
@@ -302,6 +309,23 @@ public final class CameraManager {
         }
 
         Log.i(TAG, "Final camera parameters: " + parameters.flatten());
+
+//   如果是在相机模式
+        if (isCamera) {
+            // 获取支持保存图片的尺寸
+            List<Camera.Size> supportedPictureSizes =
+                    parameters.getSupportedPictureSizes();
+            Camera.Size pictureSize = supportedPictureSizes.get(0);
+
+            parameters.setPictureSize(pictureSize.width, pictureSize.height);
+
+//            if (isSupportedPictureFormats(parameters.getSupportedPictureFormats(),
+//                    ImageFormat.JPEG)) {
+                parameters.setPictureFormat(ImageFormat.JPEG);
+                parameters.setJpegQuality(100);
+//            }
+        }
+
 
         camera.setParameters(parameters);
     }
@@ -535,5 +559,17 @@ public final class CameraManager {
      */
     public Camera getCamera() {
         return camera;
+    }
+
+
+    public boolean isSupportedPictureFormats(List<Integer> supportedPictureFormats, int jpeg) {
+        for (int i = 0; i < supportedPictureFormats.size(); i++) {
+            if (jpeg == supportedPictureFormats.get(i)) {
+                Log.i(TAG, "Formats supported " + jpeg);
+                return true;
+            }
+        }
+        Log.i(TAG, "Formats not supported " + jpeg);
+        return false;
     }
 }

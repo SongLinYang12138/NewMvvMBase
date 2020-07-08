@@ -179,14 +179,12 @@ public class DecodeThread {
         if (source != null) {
             rawResult = decoder.decode(source);
         }
-
+        Log.e("aaa camera", rawResult == null ? "解析失败" : rawResult.getText());
         if (rawResult != null) {
-            Logger.i("解析成功  " + rawResult.getText());
 
             Message msg = Message.obtain(resultHandler, DECODE_SUCCESS, rawResult);
             msg.sendToTarget();
         } else {
-            Logger.i("解析失败");
 
             Message msg = Message.obtain(resultHandler, DECODE_FAILE);
             msg.sendToTarget();
@@ -194,7 +192,7 @@ public class DecodeThread {
         }
 
 
-        Log.e("aaa camera", rawResult == null ? "解析失败" : rawResult.getText());
+
     }
 
     private class DecodeRunnable implements Runnable {

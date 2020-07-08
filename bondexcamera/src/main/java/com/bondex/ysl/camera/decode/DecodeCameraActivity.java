@@ -47,6 +47,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * date: 2020/6/10
@@ -91,10 +95,9 @@ public class DecodeCameraActivity extends AppCompatActivity {
     private static final int FINISH = 1;
     private String filePath;
     private ISCameraConfig config;
-
     private int delayTime = 0;
-
     private final String TAG = DecodeCameraActivity.class.getSimpleName();
+    private ThreadPoolExecutor executor;
 
     private NoDoubleClickListener clickListener = new NoDoubleClickListener() {
         @Override
@@ -183,6 +186,8 @@ public class DecodeCameraActivity extends AppCompatActivity {
     }
 
     private void initData() {
+        BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(2);
+        executor = new ThreadPoolExecutor(3,5,3, TimeUnit.SECONDS,workQueue);
 
         config = getIntent().getParcelableExtra(LIST_KEY);
 
@@ -253,28 +258,20 @@ public class DecodeCameraActivity extends AppCompatActivity {
 
                 if (config.takeDelay > 0) {
 
-
                     for (int i = 0; i < 3; ++i) {
-
-
                         takeHandle.sendEmptyMessage(TAKE_PHOTO);
-
-
                         try {
-
 
                             if (i == 2 && config.isAutoTak) {
 //         等待2s，用于保存照片
-                                Thread.sleep(1000);
+                                Thread.sleep(2000);
                                 takeHandle.sendEmptyMessage(FINISH);
                             }
                             Thread.sleep(delayTime);
 
-
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-
 
                     }
                 } else {
@@ -341,11 +338,7 @@ public class DecodeCameraActivity extends AppCompatActivity {
 
                 Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
 
-                Matrix matrix = new Matrix();
-
-                matrix.setRotate(90);
-                matrix.postScale(-1, 1);
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                bitmap = rotatingImage(bitmap, 90);
                 final Bitmap finalBitMap = bitmap;
 
                 runOnUiThread(new Runnable() {
@@ -381,9 +374,11 @@ public class DecodeCameraActivity extends AppCompatActivity {
                                     setLayoutStatus(false);
                                 }
                             }, 1500);
-                        } else if (config.isAutoTak) {
-                            onFinish();
                         }
+
+//                        else if (config.isAutoTak) {
+//                            onFinish();
+//                        }
 
                     }
                 });
@@ -394,8 +389,7 @@ public class DecodeCameraActivity extends AppCompatActivity {
 
     private void savePircture(final byte[] bytes, final String path, final String fileName) {
 
-
-        Thread thread = new Thread(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -414,15 +408,18 @@ public class DecodeCameraActivity extends AppCompatActivity {
                     fos.write(bytes, 0, bytes.length);
                     fos.flush();
                     fos.close();
-                    Luban.with(PhotoApplication.getContext()).ignoreBy(100).setTargetDir(file_path).setCompressRatio(100).load(tmpFile).get();
+                    Luban.with(PhotoApplication.getContext()).ignoreBy(100).setTargetDir(file_path).setCompressRatio(config.compressRatio).load(tmpFile).get();
 
+                    if (config.isAutoTak && config.takeDelay == 0) {
+                        takeHandle.sendEmptyMessage(FINISH);
+
+                    }
                     Log.i("aaa", "保存照片 " + currentImgBean.getPath() + "\n" + currentImgBean.getQrCode());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
-        thread.start();
 
 
     }
@@ -451,6 +448,14 @@ public class DecodeCameraActivity extends AppCompatActivity {
     protected DecoratedBarcodeView initializeContent() {
         setContentView(R.layout.activity_decode_camera_layout);
         return (DecoratedBarcodeView) findViewById(com.google.zxing.client.android.R.id.zxing_barcode_scanner);
+    }
+
+    private Bitmap rotatingImage(Bitmap bitmap, int angle) {
+        Matrix matrix = new Matrix();
+
+        matrix.postRotate(angle);
+        matrix.postScale(1, 1);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 
     @Override

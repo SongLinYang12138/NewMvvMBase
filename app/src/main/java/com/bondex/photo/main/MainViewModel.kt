@@ -70,9 +70,9 @@ import java.util.concurrent.TimeUnit
 class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener {
 
     val MENU_ITEMS =
-        arrayOf("重启mq", "显示二维码", "是否自动拍照", "压缩比率", "连拍设置", "查看MQ日志", "查看上传日志","新拍照")
+        arrayOf("重启mq", "显示二维码", "是否自动拍照", "清晰度", "连拍设置", "查看MQ日志", "查看上传日志")
 
-    val COMPRESS_RATIO_ITEMS = arrayOf("60%", "75%", "85%", "90%")
+    val COMPRESS_RATIO_ITEMS = arrayOf("60%", "75%", "85%", "100%")
     val TAKE_DELAY_ITEMS = arrayOf("不连拍", "3", "5", "10")
 
     val PARSE_SUCCESS: Int = 200
@@ -275,11 +275,11 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
                 bean.seqno = seqNo
                 bean.filePath = filePath
                 bean.qrcode = qrcode
-                if(error.contains("当文件已存在时")){
+                if (error.contains("当文件已存在时")) {
 
                     bean.status = 0
                     bean.content = "提交成功"
-                }else{
+                } else {
 
                     bean.status = 1
                     bean.content = error
@@ -379,10 +379,21 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
 
         val thread = Thread() {
 
-            businessLogDao?.deletSuccessBeforTime(lastWeek)
             mqLogDao?.deleteBefor(lastWeek)
+            var deleteList:List<BusinessLogBean>? = businessLogDao?.deleteLastWeek(lastWeek);
 
+            try {
+                if(deleteList != null && !deleteList.isEmpty()){
+                    for (bean:BusinessLogBean in deleteList){
+                        val file = File(bean.filePath)
+                        file.delete()
+                    }
+                }
+            }catch (e:Exception){
+                e.printStackTrace()
+            }
 
+            businessLogDao?.deletSuccessBeforTime(lastWeek)
         }
         thread.start()
 
@@ -436,12 +447,12 @@ class MainViewModel : BaseViewMode<MainModel>(), MainCallBack, DownloadListener 
         NetWorkUtils.upload(upload_url, bean.filePath, bean.qrcode, object : UploadCallBack {
             override fun uploadError(error: String, file_path: String) {
 
-                if(error.contains("当文件已存在时")){
+                if (error.contains("当文件已存在时")) {
 
                     bean.status = 0
                     bean.content = "提交成功"
 
-                }else{
+                } else {
 
                     bean.status = 1
                     bean.content = error

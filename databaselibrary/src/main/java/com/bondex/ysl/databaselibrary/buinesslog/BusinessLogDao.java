@@ -46,4 +46,7 @@ public interface BusinessLogDao {
 
     @Query("DELETE FROM BusinessLogBean WHERE status == 0 and create_time <= (:time)")
     int deletSuccessBeforTime(long time);
+
+    @Query("SELECT * FROM BUSINESSLOGBEAN WHERE status == 0 and create_time <= (:lastWeek)")
+    List<BusinessLogBean> deleteLastWeek(long lastWeek);
 }

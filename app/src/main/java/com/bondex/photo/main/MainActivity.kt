@@ -118,11 +118,11 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
         showRight(true, R.string.camera, object : NoDoubleClickListener() {
             override fun click(v: View?) {
 
-//                if (viewModel.haveStart) {
+                if (viewModel.haveStart) {
                 toCamera(false)
-//                } else {
-//                    ToastUtils.showToast("请先启动mq")
-//                }
+                } else {
+                    ToastUtils.showToast("请先启动mq")
+                }
             }
         })
 
@@ -161,7 +161,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
                         4 -> chooseTakeDelay()
                         5 -> toLog(true)
                         6 -> toLog(false)
-                        7 -> toNewCamera()
+//                        7 -> toNewCamera()
                     }
                     dialog.dismiss()
                 }

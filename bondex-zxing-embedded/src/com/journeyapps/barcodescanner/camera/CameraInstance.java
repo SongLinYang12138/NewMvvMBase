@@ -16,9 +16,9 @@ import com.journeyapps.barcodescanner.inter.DecodeCameraImgCallBack;
  * All methods must be called from the main thread.
  */
 public class CameraInstance {
-    private static final String TAG = CameraInstance.class.getSimpleName();
 
-    private CameraThread cameraThread;
+    private CameraThread cameraThread;    private static final String TAG = CameraInstance.class.getSimpleName();
+
     private CameraSurface surface;
 
     private CameraManager cameraManager;
@@ -106,6 +106,10 @@ public class CameraInstance {
     public void takePicture(DecodeCameraImgCallBack cameraImgCallBack) {
 
         cameraManager.takePictures(cameraImgCallBack);
+    }
+
+    public void setIsCamera(boolean isCamera){
+        cameraManager.setIsCamera(isCamera);
     }
 
     /**

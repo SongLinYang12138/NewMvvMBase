@@ -445,21 +445,7 @@ public class CameraSingleton {
 
                             Log.i("aaa", " decode success " + result.getText());
 
-                            if (resultHandler != null) {
-
-                                JSONObject ob = new JSONObject();
-                                try {
-                                    ob.put("fileName", fileName);
-                                    ob.put("qrCode", result.getText());
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-
-                                Message msg = new Message();
-                                msg.what = 101;
-                                msg.obj = ob;
-                                resultHandler.sendMessage(msg);
-                            }
+                            if (resultHandler != null)
 
 
                             Luban.with(PhotoApplication.getContext()).ignoreBy(100).setTargetDir(file_path).setCompressRatio(100).load(tmpFile).get();

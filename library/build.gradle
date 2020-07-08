@@ -28,12 +28,14 @@ android {
     }
 
 }
- def depend = config.dependencies
+def depend = config.dependencies
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     api depend.kottlin
-    api  depend.appcompat
-    api  depend.core_ktx
+    api depend.kottlin_coroutines_core
+    api depend.kotlin_coroutines
+    api depend.appcompat
+    api depend.core_ktx
     api depend.constraintlayout
     api depend.recyclerview
     api depend.avi
@@ -42,11 +44,10 @@ dependencies {
     api depend.okhttp
 
     //    mqtt
-    api  depend.mq
+    api depend.mq
     api depend.gson
 
     api depend.coordinatorlayout
-
 
 
 //    rxjava rxandroid
@@ -56,7 +57,6 @@ dependencies {
     api project(':databaselibrary')
 
     api depend.imageLoader
-
 
 
     implementation project(":styleibrary")

@@ -79,7 +79,12 @@ class Engine {
         options.inSampleSize = computeSize();
 
         try {
-            Bitmap tagBitmap = BitmapFactory.decodeStream(srcImg.open(), null, options);
+            Bitmap tagBitmap = null;
+            if (compressRatio == 100) {
+                tagBitmap = BitmapFactory.decodeStream(srcImg.open());
+            } else {
+                tagBitmap = BitmapFactory.decodeStream(srcImg.open(), null, options);
+            }
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
             if (Checker.SINGLE.isJPG(srcImg.open())) {

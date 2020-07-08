@@ -61,19 +61,13 @@ public class NetWorkUtils {
 
     public static void upload(String url, final String path, String param, final UploadCallBack callback) {
 
-        File file = new File(path);
-        String fileName = file.getName();
+       final File file = new File(path);
+       final String fileName = file.getName();
         int fileTypeIndex = fileName.lastIndexOf(".");
         String fileType = fileName.substring(fileTypeIndex+1);
 //        Log.i("aaa", "fileType " + path);
 
-        final RequestBody requestBody = RequestBody.create(MediaType.parse("image/png"), file);
-        final MultipartBody body = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("file", fileName, requestBody)
-                .addFormDataPart("imagetype", mImageType)
 
-                .build();
 
 
 
@@ -85,6 +79,23 @@ public class NetWorkUtils {
             @Override
             public void subscribe(final ObservableEmitter<UploadResultBean> emitter) {
 
+                if (!file.exists()){
+                    try {
+                        Thread.sleep(1500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
+                final RequestBody requestBody = RequestBody.create(MediaType.parse("image/png"), file);
+                final MultipartBody body = new MultipartBody.Builder()
+                        .setType(MultipartBody.FORM)
+                        .addFormDataPart("file", fileName, requestBody)
+                        .addFormDataPart("imagetype", mImageType)
+
+                        .build();
+Log.i("aaa"," upload url "+file.getAbsolutePath());
                 Call call = getHttpClient().newCall(getRequst(net_url, body));
                 call.enqueue(new Callback() {
                     @Override
