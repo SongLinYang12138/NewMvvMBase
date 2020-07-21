@@ -1,7 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="QMUI.NoActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorAccent">@color/colorAccent</item>
         <!--<item name="editTextStyle">@style/EditTextStyle</item>-->
@@ -18,7 +18,7 @@
 <item name="android:windowBackground">@mipmap/launcher</item>
     </style>
 
-    <style name="dialog" parent="Base.DialogWindowTitle.AppCompat">
+    <style name="dialog" parent="Base.DialogWindowTitle.AppCompat" tools:ignore="DuplicateDefinition">
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowFrame">@android:color/transparent</item>
         <item name="android:windowIsFloating">true</item><!--浮在其他Activity之上-->

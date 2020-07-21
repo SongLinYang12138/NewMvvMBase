@@ -55,11 +55,75 @@
             android:id="@+id/ck"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/btn1"
-            app:layout_constraintLeft_toLeftOf="parent"
             android:checked="@={editobserver.check}"
-            />
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn1" />
 
+        <EditText
+            android:id="@+id/et2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="et2"
+            android:text="@={testModel.et2}"
+            app:layout_constraintLeft_toRightOf="@id/btn1"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/et1" />
+
+        <EditText
+            android:id="@+id/et3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="et3"
+            android:text="@={testModel.et3}"
+            app:layout_constraintLeft_toLeftOf="@id/et2"
+            app:layout_constraintTop_toBottomOf="@id/et2" />
+
+        <EditText
+            android:id="@+id/et4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="et4"
+            android:text="@={testModel.et4}"
+            app:layout_constraintLeft_toLeftOf="@id/et2"
+            app:layout_constraintTop_toBottomOf="@id/et3" />
+
+        <androidx.constraintlayout.widget.Group
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/black_panit"
+            android:padding="@dimen/activity_horizontal_margin"
+            android:visibility="visible"
+            app:constraint_referenced_ids="et2,et3,et4"
+            app:layout_constraintBottom_toBottomOf="@id/et4"
+            app:layout_constraintLeft_toLeftOf="@id/et2"
+            app:layout_constraintRight_toRightOf="@id/et2"
+            app:layout_constraintTop_toTopOf="@id/et2" />
+
+        <TextView
+            android:id="@+id/tv2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12452323884"
+            app:layout_constraintLeft_toLeftOf="@id/ck"
+            app:layout_constraintTop_toBottomOf="@id/ck" />
+
+        <TextView
+            android:id="@+id/tv3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1234545"
+            app:layout_constraintLeft_toLeftOf="@id/ck"
+            app:layout_constraintTop_toBottomOf="@id/tv2" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="right"
+            app:constraint_referenced_ids="tv2,tv3"
+            app:layout_constraintTop_toTopOf="@id/tv2"
+            app:layout_constraintBottom_toBottomOf="@id/tv3"
+            />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

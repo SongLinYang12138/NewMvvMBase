@@ -95,7 +95,6 @@ public class CaptureManager {
                 if (cameraCallback != null) {
                     cameraCallback.barcodeResult(result);
                 }
-                Log.i("aaa", " isCamera " + result.getText());
             }
 
         }

@@ -19,19 +19,10 @@ import com.bondex.library.ui.IconText
 import com.bondex.library.util.CommonUtils
 import com.bondex.library.util.Tools
 import com.bondex.photo.R
-import com.bondex.photo.generated.callback.OnClickListener
 import com.bondex.photo.utils.RecyclerListener
 import com.bondex.ysl.databaselibrary.buinesslog.BusinessLogBean
 import com.bumptech.glide.Glide
-import com.nostra13.universalimageloader.core.ImageLoader
-//import com.bumptech.glide.Glide
-import com.qmuiteam.qmui.skin.QMUISkinManager
-import com.qmuiteam.qmui.util.QMUIDisplayHelper
-import com.qmuiteam.qmui.widget.QMUIRadiusImageView2
-import com.qmuiteam.qmui.widget.dialog.QMUIDialog
-import com.qmuiteam.qmui.widget.dialog.QMUIDialogBuilder
-import com.qmuiteam.qmui.widget.popup.QMUIPopups
-import com.qmuiteam.qmui.widget.popup.QMUIQuickAction
+
 import java.io.File
 
 /**
@@ -67,7 +58,6 @@ class BusinessLogAdapter : RecyclerView.Adapter<BusinessLogAdapter.ViewHolder>()
         holder.tv?.setOnClickListener { v ->
 
             var position = v?.getTag() as Int
-            showMenu(v, position)
         }
         return holder
     }
@@ -93,42 +83,6 @@ class BusinessLogAdapter : RecyclerView.Adapter<BusinessLogAdapter.ViewHolder>()
 
     }
 
-    var menuDialog: QMUIDialog? = null
-    val menus = arrayOf("图片", "重新上传")
-    var currentFilePath = ""
-    var currentPosition = 0
-    private fun showMenu(v: View, position: Int) {
-
-        currentFilePath = list.get(position).filePath
-        currentPosition = position
-
-        if (menuDialog == null) {
-
-            menuDialog = QMUIDialog.MenuDialogBuilder(context)
-
-                .addItems(menus) { dialog, which ->
-
-                    dialog?.dismiss()
-
-                    if (which == 0) {
-                        showImgDialog(currentFilePath)
-                    } else if (which == 1) {
-
-                        listener?.onItem(currentPosition,list.get(currentPosition))
-                    }
-                }
-                .setSkinManager(QMUISkinManager.defaultInstance(context)).create()
-            menuDialog?.show()
-        } else {
-
-            if (menuDialog?.isShowing!!) {
-                menuDialog?.hide()
-            } else {
-                menuDialog?.show()
-            }
-
-        }
-    }
 
 
     var dialog_iv: ImageView? = null
@@ -145,7 +99,7 @@ class BusinessLogAdapter : RecyclerView.Adapter<BusinessLogAdapter.ViewHolder>()
 
             dialog_iv?.setMaxHeight(CommonUtils.getScreenH(context))
 
-            Glide.with(context).load(getFileUri()).into(dialog_iv)
+//            Glide.with(context).load(getFileUri()).into(dialog_iv)
 
 
             dialog?.setCanceledOnTouchOutside(true)
@@ -166,7 +120,7 @@ class BusinessLogAdapter : RecyclerView.Adapter<BusinessLogAdapter.ViewHolder>()
             if (dialog?.isShowing!!) {
                 dialog?.dismiss()
             } else {
-                Glide.with(context).load(getFileUri()).into(dialog_iv)
+//                Glide.with(context).load(getFileUri()).into(dialog_iv)
                 dialog?.show()
             }
 
@@ -187,20 +141,20 @@ class BusinessLogAdapter : RecyclerView.Adapter<BusinessLogAdapter.ViewHolder>()
 
     }
 
-    private fun getFileUri(): Uri {
-
-        var uri: Uri? = null
-        val file = File(currentFilePath)
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            uri = Uri.fromFile(file)
-        } else {
-            uri = FileProvider.getUriForFile(context!!, Constant.AUTHORITY, file)
-        }
-
-
-        return uri
-    }
+//    private fun getFileUri(): Uri {
+//
+//        var uri: Uri? = null
+//        val file = File(currentFilePath)
+//
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+//            uri = Uri.fromFile(file)
+//        } else {
+//            uri = FileProvider.getUriForFile(context!!, Constant.AUTHORITY, file)
+//        }
+//
+//
+//        return uri
+//    }
 
 
 }

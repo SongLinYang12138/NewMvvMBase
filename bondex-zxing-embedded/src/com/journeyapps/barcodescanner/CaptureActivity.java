@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,7 +21,7 @@ import com.google.zxing.client.android.R;
 import com.journeyapps.barcodescanner.inter.DecodeImgCallback;
 import com.journeyapps.barcodescanner.utils.DecodeImgThread;
 import com.journeyapps.barcodescanner.utils.ImageUtil;
-import com.qmuiteam.qmui.widget.QMUIRadiusImageView;
+
 
 /**
  *
@@ -28,7 +29,7 @@ import com.qmuiteam.qmui.widget.QMUIRadiusImageView;
 public class CaptureActivity extends AppCompatActivity {
     private CaptureManager capture;
     private DecoratedBarcodeView barcodeScannerView;
-    private QMUIRadiusImageView ivPicture;
+    private ImageView ivPicture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

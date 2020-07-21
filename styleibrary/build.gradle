@@ -29,7 +29,6 @@ android {
 def depend = config.dependencies
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    api project(":qmui")
 
     implementation depend.appcompat
     implementation depend.recyclerview

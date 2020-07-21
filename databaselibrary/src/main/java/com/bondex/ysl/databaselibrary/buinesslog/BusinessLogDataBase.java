@@ -15,7 +15,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
  * @Author: ysl
  * description:
  */
-@Database(entities = BusinessLogBean.class, version = 2)
+@Database(entities = BusinessLogBean.class, version = 2,exportSchema = false)
 public abstract class BusinessLogDataBase extends RoomDatabase {
 
     private final static String DB_NAME = "business_log";

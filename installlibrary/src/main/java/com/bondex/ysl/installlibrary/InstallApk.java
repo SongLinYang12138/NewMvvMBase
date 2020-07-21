@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
+
 import androidx.core.content.FileProvider;
 
 import java.io.File;
@@ -19,19 +21,23 @@ public class InstallApk {
     private static final String AUTHORITY = "com.bondex.ysl.photo.fileprovider";
 
     public static void install(String path, Context context) {
-
+        Log.i("aaa", "path " + path);
         Intent intent = new Intent(Intent.ACTION_VIEW);
 
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
 
-            intent.setDataAndType(Uri.fromFile(new File(path)),TYPE);
-        }else {
-            Uri uri = FileProvider.getUriForFile(context,AUTHORITY,new File(path));
+            intent.setDataAndType(Uri.fromFile(new File(path)), TYPE);
+        } else {
+            Uri uri = FileProvider.getUriForFile(context, AUTHORITY, new File(path));
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            intent.setDataAndType(uri,TYPE);
+            intent.setDataAndType(uri, TYPE);
         }
-        context.startActivity(intent);
+        try {
+            context.startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 

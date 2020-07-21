@@ -21,7 +21,7 @@ class TestActivity : BaseActivity<ActivityTestBinding, TestViewModel>() {
         val editObserver = EditObserver()
 
         binding.editobserver = editObserver
-
+        binding.testModel = viewModel
     }
 
     override fun initListener() {

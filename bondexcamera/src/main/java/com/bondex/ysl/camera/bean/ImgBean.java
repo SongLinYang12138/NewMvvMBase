@@ -115,4 +115,14 @@ public class ImgBean implements Parcelable {
         dest.writeString(fileName);
         dest.writeInt(id);
     }
+
+    @Override
+    public String toString() {
+        return "ImgBean{" +
+                "path='" + path + '\'' +
+                ", qrCode='" + qrCode + '\'' +
+                ", fileName='" + fileName + '\'' +
+                ", id=" + id +
+                '}';
+    }
 }

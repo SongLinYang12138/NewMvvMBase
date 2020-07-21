@@ -68,12 +68,9 @@ public class NetWorkUtils {
 //        Log.i("aaa", "fileType " + path);
 
 
-
-
-
         final String net_url = CommonUtils.isEmpty(param) ? url + INTERFACE_ADDRESS : url + INTERFACE_ADDRESS+"?FlowNo="+param;
 
-        Log.i("aaa", "upload_url " + net_url);
+        Log.i("aaa", "upload_url " + net_url+" \n param"+param);
 
         Observable<UploadResultBean> observable = Observable.create(new ObservableOnSubscribe<UploadResultBean>() {
             @Override
@@ -95,7 +92,6 @@ public class NetWorkUtils {
                         .addFormDataPart("imagetype", mImageType)
 
                         .build();
-Log.i("aaa"," upload url "+file.getAbsolutePath());
                 Call call = getHttpClient().newCall(getRequst(net_url, body));
                 call.enqueue(new Callback() {
                     @Override

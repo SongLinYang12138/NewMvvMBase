@@ -194,7 +194,7 @@ public class ConcurrentDecodeThread {
             rawResult = decoder.decode(source);
         }
 
-        Log.e("aaa", rawResult == null ? "解析失败" : rawResult.getText());
+//        Log.e("aaa", rawResult == null ? "解析失败" : rawResult.getText());
 
         if (rawResult != null) {
             // Don't log the barcode contents for security.

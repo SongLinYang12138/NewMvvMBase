@@ -29,7 +29,7 @@
         app:zxing_use_texture_view="false" />
 
 
-    <com.qmuiteam.qmui.widget.QMUIRadiusImageView
+    <ImageView
         android:id="@+id/iv_photo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -37,6 +37,6 @@
         android:layout_marginRight="@dimen/activity_margin"
         android:src="@drawable/ic_photo"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"></com.qmuiteam.qmui.widget.QMUIRadiusImageView>
+        app:layout_constraintTop_toTopOf="parent"></ImageView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

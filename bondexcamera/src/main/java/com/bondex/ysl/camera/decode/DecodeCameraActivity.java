@@ -27,6 +27,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bondex.library.app.PhotoApplication;
+import com.bondex.library.util.CommonUtils;
 import com.bondex.library.util.NoDoubleClickListener;
 import com.bondex.library.util.StatusBarUtil;
 import com.bondex.ysl.camera.CameraActivity;
@@ -42,6 +43,7 @@ import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.CaptureManager;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 import com.journeyapps.barcodescanner.inter.DecodeCameraImgCallBack;
+import com.orhanobut.logger.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -96,7 +98,7 @@ public class DecodeCameraActivity extends AppCompatActivity {
     private String filePath;
     private ISCameraConfig config;
     private int delayTime = 0;
-    private final String TAG = DecodeCameraActivity.class.getSimpleName();
+    private final String TAG = "aaa";
     private ThreadPoolExecutor executor;
 
     private NoDoubleClickListener clickListener = new NoDoubleClickListener() {
@@ -118,7 +120,6 @@ public class DecodeCameraActivity extends AppCompatActivity {
                     autoTake();
                 } else {
                     takePicture();
-
                 }
 
             } else if (i == R.id.tv_cancel_take_pic) {
@@ -175,7 +176,7 @@ public class DecodeCameraActivity extends AppCompatActivity {
         });
         capture.decode();
         barcodeScannerView.setIsCamera(true);
-        Log.i("aaa", " decodeCamera");
+
 
         filePath = getBaseContext().getExternalFilesDir(Environment.DIRECTORY_DCIM).getAbsolutePath() + File.separator + "img";
 
@@ -187,7 +188,7 @@ public class DecodeCameraActivity extends AppCompatActivity {
 
     private void initData() {
         BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(2);
-        executor = new ThreadPoolExecutor(3,5,3, TimeUnit.SECONDS,workQueue);
+        executor = new ThreadPoolExecutor(3, 5, 3, TimeUnit.SECONDS, workQueue);
 
         config = getIntent().getParcelableExtra(LIST_KEY);
 
@@ -329,6 +330,8 @@ public class DecodeCameraActivity extends AppCompatActivity {
     }
 
     private void takePicture() {
+
+
         playAutdio();
 
         barcodeScannerView.takePicture(new DecodeCameraImgCallBack() {
@@ -353,18 +356,11 @@ public class DecodeCameraActivity extends AppCompatActivity {
 
                         if (currentImgBean == null) {
                             currentImgBean = new ImgBean();
-                        } else if (takeImgs.contains(currentImgBean)) {
+                        } else if (CommonUtils.isNotEmpty(currentImgBean.getFileName())) {
                             currentImgBean = new ImgBean();
                         }
 
-
-                        currentImgBean.setPath(filePath + File.separator + fileName);
-                        currentImgBean.setFileName(fileName);
-
-                        takeImgs.add(currentImgBean);
-
                         savePircture(data, filePath, fileName);
-
 
                         if (config.takeDelay > 0) {
 
@@ -375,10 +371,6 @@ public class DecodeCameraActivity extends AppCompatActivity {
                                 }
                             }, 1500);
                         }
-
-//                        else if (config.isAutoTak) {
-//                            onFinish();
-//                        }
 
                     }
                 });
@@ -408,13 +400,19 @@ public class DecodeCameraActivity extends AppCompatActivity {
                     fos.write(bytes, 0, bytes.length);
                     fos.flush();
                     fos.close();
+
                     Luban.with(PhotoApplication.getContext()).ignoreBy(100).setTargetDir(file_path).setCompressRatio(config.compressRatio).load(tmpFile).get();
+
+                    currentImgBean.setPath(file_path);
+                    currentImgBean.setFileName(fileName);
+
+                    Log.i("aaa", "currentImgbean  " + currentImgBean.toString());
+                    takeImgs.add(currentImgBean);
 
                     if (config.isAutoTak && config.takeDelay == 0) {
                         takeHandle.sendEmptyMessage(FINISH);
 
                     }
-                    Log.i("aaa", "保存照片 " + currentImgBean.getPath() + "\n" + currentImgBean.getQrCode());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -425,6 +423,7 @@ public class DecodeCameraActivity extends AppCompatActivity {
     }
 
     private void onFinish() {
+
         Intent intent = new Intent();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
             intent.putParcelableArrayListExtra(FINISH_KEY, takeImgs);

@@ -300,7 +300,6 @@ public class CameraSingleton {
                             mode.contains("continuous-video");
                             mParams.setFocusMode("continuous-video");
 
-                            Log.i("aaa", "自动对焦");
                         }
                     }
                 }

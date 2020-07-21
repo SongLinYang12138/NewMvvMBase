@@ -179,7 +179,7 @@ public class DecodeThread {
         if (source != null) {
             rawResult = decoder.decode(source);
         }
-        Log.e("aaa camera", rawResult == null ? "解析失败" : rawResult.getText());
+//        Log.e("aaa camera", rawResult == null ? "解析失败" : rawResult.getText());
         if (rawResult != null) {
 
             Message msg = Message.obtain(resultHandler, DECODE_SUCCESS, rawResult);

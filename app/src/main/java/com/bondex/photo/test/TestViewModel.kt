@@ -19,12 +19,20 @@ import kotlin.coroutines.Continuation
 class TestViewModel : BaseViewMode<TestModel>() {
     val tv = ObservableField<String>()
 
+    val et2 = ObservableField<String>()
+    val et3 = ObservableField<String>()
+    val et4 = ObservableField<String>()
+    val editObserver = EditObserver()
 
     fun onSaveClick(view: View?) {
 
-        netWork()
+//        et2.set("et2")
+//        et3.set("et3")
+//        et4.set("et4")
+        Log.i("aaa", " et2 " + et2.get() + "  et3 " + et3.get() + " et4 " + et4.get())
+//        netWork()
 //testBlock()
-        Toast.makeText(PhotoApplication.getContext(), "点击", Toast.LENGTH_SHORT).show()
+//        Toast.makeText(PhotoApplication.getContext(), "点击", Toast.LENGTH_SHORT).show()
     }
 
     fun testBlock() = runBlocking {

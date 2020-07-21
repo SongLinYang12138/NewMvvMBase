@@ -24,7 +24,7 @@ import com.bondex.library.util.NoDoubleClickListener;
 
 import com.bondex.library.util.StatusBarUtil;
 import com.bondex.library.util.ToastUtils;
-import com.qmuiteam.qmui.widget.dialog.QMUITipDialog;
+
 import com.wang.avi.AVLoadingIndicatorView;
 
 import java.lang.reflect.ParameterizedType;

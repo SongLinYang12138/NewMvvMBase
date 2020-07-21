@@ -105,6 +105,8 @@ class Engine {
             fos.close();
             stream.close();
 
+            Log.i("aaa"," 压缩时间 ");
+
         } catch (Exception e) {
             e.printStackTrace();
         }

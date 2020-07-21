@@ -132,6 +132,11 @@ public class MQManager {
         thread.start();
     }
 
+    public boolean isConnected() {
+
+        return mqWork.mqConnected();
+    }
+
     public void checkMQ() {
 
         Log.i("aaa", "check " + mqWork.mqConnected());

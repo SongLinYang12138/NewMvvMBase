@@ -2,8 +2,8 @@ ext {
     minSdkVersion = 21
     targetSdkVersion = 29
     buildToolsVersion = "29.0.3"
-    versionCode = 4
-    versionName = "1.0.0.4"
+    versionCode = 5
+    versionName = "1.0.0.5"
 
     applicationId = "com.bondex.photo"
 

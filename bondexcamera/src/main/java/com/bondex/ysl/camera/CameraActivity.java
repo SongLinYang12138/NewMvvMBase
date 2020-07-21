@@ -205,7 +205,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                         try {
 
 
-
                             if (i == 2 && config.isAutoTak) {
 //         等待2s，用于保存照片
                                 Thread.sleep(1000);
