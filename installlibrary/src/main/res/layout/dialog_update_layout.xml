@@ -47,7 +47,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.3" />
 
-    <com.bondex.library.ui.ProgressView
+    <com.bondex.ysl.installlibrary.ui.ProgressView
         android:id="@+id/update_progress"
         android:layout_width="200dp"
         android:layout_height="200dp"

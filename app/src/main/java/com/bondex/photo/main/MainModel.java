@@ -34,21 +34,7 @@ public class MainModel extends BaseModel<MainCallBack> {
 
     protected void checkVersion(){
 
-        HttpConnection.checkVersion(new UpdateListener() {
-            @Override
-            public void update(UpdateBean updateBean) {
 
-                if(updateBean.getVersion_id() > CommonUtils.getVersionCode(PhotoApplication.getContext())){
-                      resultBack.checkVersion(updateBean);
-                }
-
-            }
-
-            @Override
-            public void notUpdate(String msg) {
-
-            }
-        });
     }
 
     public void download(final String url, final String path, final DownloadListener listener) {

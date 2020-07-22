@@ -45,6 +45,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
             MQManager.START_FAIL -> {
             }
         }
+
     }
 
 
@@ -69,11 +70,15 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
             }
         })
 
+        viewModel.createManager(supportFragmentManager,R.id.content)
 
     }
 
 
     override fun initListener() {
+
+        bt_fisrt.setOnClickListener(clickListener)
+        bt_second.setOnClickListener(clickListener)
 
     }
 
@@ -85,6 +90,23 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
 
     override fun handleMsg(msg: String?) {
 
+
+    }
+
+    override fun myClick(v: View?) {
+
+        when (v?.id) {
+
+            R.id.bt_fisrt -> {
+
+                viewModel.switchFragment(0)
+            }
+            R.id.bt_second -> {
+
+                viewModel.switchFragment(1)
+            }
+
+        }
 
     }
 

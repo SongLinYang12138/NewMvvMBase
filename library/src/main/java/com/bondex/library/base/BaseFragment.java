@@ -1,30 +1,25 @@
 package com.bondex.library.base;
 
-
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.TextView;
+import android.view.ViewGroup;
 
 import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.bondex.library.R;
-import com.bondex.library.app.PhotoApplication;
-import com.bondex.library.ui.IconText;
-import com.bondex.library.util.CommonUtils;
 import com.bondex.library.util.NoDoubleClickListener;
-
-import com.bondex.library.util.StatusBarUtil;
 import com.bondex.library.util.ToastUtils;
-
 import com.wang.avi.AVLoadingIndicatorView;
 
 import java.lang.reflect.ParameterizedType;
@@ -33,19 +28,18 @@ import java.lang.reflect.Type;
 import static com.bondex.library.app.PhotoApplication.getContext;
 
 /**
- * date: 2020/4/23
+ * date: 2020/7/22
  *
- * @Author: ysl
+ * @author: ysl
  * description:
  */
-public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseViewMode> extends AppCompatActivity {
+public abstract class BaseFragment<V extends ViewDataBinding, M extends BaseViewMode> extends Fragment {
 
-    protected D binding;
+
+    protected V binding;
     protected M viewModel;
-
-    protected IconText itBack, itRight;
-    protected TextView tvTitle;
     protected AVLoadingIndicatorView loading;
+
     protected NoDoubleClickListener clickListener = new NoDoubleClickListener() {
         @Override
         public void click(View v) {
@@ -80,47 +74,29 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
         }
     };
 
+    @Nullable
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        initStatusBar();
+        binding = DataBindingUtil.inflate(inflater, getLayoutId(), container, false);
+
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        loading = view.findViewById(R.id.avl_loading);
         initViewModel();
         performDataBinding();
         initView();
         initListener();
-
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        initObserver();
-    }
-
-    private void initStatusBar() {
-
-        StatusBarUtil.setColor(this, getResources().getColor(R.color.colorPrimary));
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        removeObserver();
-        viewModel.detachUi();
-    }
 
     private void performDataBinding() {
-        binding = DataBindingUtil.setContentView(this, getLayoutId());
-
         View view = binding.getRoot();
-
-        itBack = view.findViewById(R.id.title_it_back);
-        tvTitle = view.findViewById(R.id.title_tv_title);
-        itRight = view.findViewById(R.id.title_it_right);
-        loading = view.findViewById(R.id.avl_loading);
 
         if (getBindingVariable() > 0) {
             binding.setVariable(getBindingVariable(), viewModel);
@@ -138,7 +114,7 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
             //如果没有指定泛型参数，则默认使用BaseViewModel
             modelClass = BaseViewMode.class;
         }
-        viewModel = (M) createViewModel(this, modelClass);
+        viewModel = (M) createViewModel(getActivity(), modelClass);
         viewModel.attachUi();
         viewModel.setContext(getContext());
 //生命周期监听
@@ -168,45 +144,6 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
 
     }
 
-    protected void showLeft(boolean isShow, int resourceId) {
-
-        if (itBack != null) {
-
-            itBack.setVisibility(isShow ? View.VISIBLE : View.GONE);
-            itBack.setOnClickListener(new NoDoubleClickListener() {
-                @Override
-                public void click(View v) {
-
-                    finish();
-                }
-            });
-        }
-    }
-
-    protected void showTile(boolean isShow, String title) {
-        if (tvTitle != null) {
-
-            if (CommonUtils.isNotEmpty(title)) {
-                tvTitle.setText(title);
-
-            }
-            tvTitle.setVisibility(isShow ? View.VISIBLE : View.GONE);
-        }
-    }
-
-    protected void showRight(boolean isShow, int rosouce, NoDoubleClickListener listener) {
-
-        if (itRight != null) {
-
-            itRight.setVisibility(isShow ? View.VISIBLE : View.GONE);
-            if (isShow) {
-                itRight.setText(rosouce == 0 ? R.string.camera : rosouce);
-            }
-            itRight.setOnClickListener(listener);
-        }
-
-    }
-
     protected void showDialog(String msg) {
 
         ToastUtils.showToast(msg);
@@ -221,7 +158,7 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
      * @param <T>
      * @return
      */
-    public <T extends ViewModel> T createViewModel(AppCompatActivity activity, Class<T> cls) {
+    public <T extends ViewModel> T createViewModel(FragmentActivity activity, Class<T> cls) {
         return ViewModelProviders.of(activity).get(cls);
     }
 
@@ -244,5 +181,19 @@ public abstract class BaseActivity<D extends ViewDataBinding, M extends BaseView
 
     protected abstract void myClick(View v);
 
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        initObserver();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        removeObserver();
+        viewModel.detachUi();
+    }
 
 }

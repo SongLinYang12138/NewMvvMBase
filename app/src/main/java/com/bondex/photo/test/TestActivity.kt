@@ -1,5 +1,6 @@
 package com.bondex.photo.test
 
+import android.view.View
 import com.bondex.photo.BR
 import com.bondex.photo.R
 import com.bondex.library.base.BaseActivity
@@ -29,6 +30,10 @@ class TestActivity : BaseActivity<ActivityTestBinding, TestViewModel>() {
     }
 
     override fun handleMsg(msg: String?) {
+
+    }
+
+    override fun myClick(v: View?) {
 
     }
 

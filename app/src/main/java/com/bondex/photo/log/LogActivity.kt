@@ -15,7 +15,9 @@ class LogActivity : BaseActivity<ActivityLogBinding, LogViewModel>() {
 
 
     override fun getBindingVariable(): Int {
-        return BR.logViewModel
+//        return BR.logViewModel
+
+        return 0
     }
 
     override fun getLayoutId(): Int {
@@ -90,6 +92,10 @@ class LogActivity : BaseActivity<ActivityLogBinding, LogViewModel>() {
     }
 
     override fun handleMsg(msg: String?) {
+
+    }
+
+    override fun myClick(v: View?) {
 
     }
 }

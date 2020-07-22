@@ -28,10 +28,12 @@ def depend = rootProject.ext.dependencies
 dependencies {
 
     implementation depend.appcompat
+    implementation depend.constraintlayout
     implementation 'com.squareup.retrofit2:converter-scalars:2.0.0'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
     implementation 'io.reactivex.rxjava2:rxjava:2.x.x'
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation project(':fileprovider')
+    implementation project(':styleibrary')
 
 }

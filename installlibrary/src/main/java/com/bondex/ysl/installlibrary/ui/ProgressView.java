@@ -1,4 +1,4 @@
-package com.bondex.library.ui;
+package com.bondex.ysl.installlibrary.ui;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -9,8 +9,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
-
-import com.bondex.library.R;
+import com.bondex.ysl.installlibrary.R;
 
 
 /**
@@ -142,8 +141,8 @@ public class ProgressView extends View {
 
         Paint.FontMetricsInt fontMetrics = textPaint.getFontMetricsInt();
 
-        int baseline = center + (fontMetrics.bottom - fontMetrics.top) / 2 - fontMetrics.bottom; // 计算文字的基线,方法见http://blog.csdn.net/harvic880925/article/details/50423762
-
+        // 计算文字的基线,方法见http://blog.csdn.net/harvic880925/article/details/50423762
+        int baseline = center + (fontMetrics.bottom - fontMetrics.top) / 2 - fontMetrics.bottom;
         canvas.drawText(currentValue + "%", center, baseline, textPaint);
     }
 

@@ -10,6 +10,5 @@ import com.bondex.ysl.installlibrary.download.UpdateBean
  */
 interface MainCallBack : BaseBack {
 
-        fun checkVersion(updateBean: UpdateBean)
 
 }
