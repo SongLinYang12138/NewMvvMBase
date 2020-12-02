@@ -13,6 +13,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/bondex-zxing-embedded" />
             <option value="$PROJECT_DIR$/bondexcamera" />
+            <option value="$PROJECT_DIR$/convenientbanner" />
             <option value="$PROJECT_DIR$/databaselibrary" />
             <option value="$PROJECT_DIR$/fileprovider" />
             <option value="$PROJECT_DIR$/installlibrary" />
@@ -21,6 +22,7 @@
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
+        <option name="useQualifiedModuleNames" value="true" />
       </GradleProjectSettings>
     </option>
   </component>

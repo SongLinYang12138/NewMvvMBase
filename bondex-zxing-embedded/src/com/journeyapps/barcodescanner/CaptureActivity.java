@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.ImageView;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,14 +22,13 @@ import com.journeyapps.barcodescanner.inter.DecodeImgCallback;
 import com.journeyapps.barcodescanner.utils.DecodeImgThread;
 import com.journeyapps.barcodescanner.utils.ImageUtil;
 
-
 /**
  *
  */
 public class CaptureActivity extends AppCompatActivity {
     private CaptureManager capture;
     private DecoratedBarcodeView barcodeScannerView;
-    private ImageView ivPicture;
+    private ImageButton ivPicture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

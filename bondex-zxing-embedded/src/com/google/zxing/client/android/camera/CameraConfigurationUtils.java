@@ -228,7 +228,7 @@ public final class CameraConfigurationUtils {
         }
     }
 
-    public static void setZoom(Camera.Parameters parameters, double targetZoomRatio) {
+    public static void setZoom(Camera.Parameters parameters,double targetZoomRatio) {
         if (parameters.isZoomSupported()) {
             Integer zoom = indexOfClosestZoom(parameters, targetZoomRatio);
             if (zoom == null) {

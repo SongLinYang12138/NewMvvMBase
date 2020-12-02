@@ -1,3 +1,3 @@
 rootProject.name='JetpackBase'
 include ':app', ':databaselibrary', ':styleibrary', ':bondexcamera', ':bondex-zxing-embedded', ':fileprovider', ':installlibrary'
-include ':library'
+include ':library','convenientbanner'
